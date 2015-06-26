@@ -1,0 +1,28 @@
+0000  -  0
+0001  -  1
+0010  -  2
+0011  -  3
+0100  -  4
+0101  -  5
+0110  -  6
+0111  -  7
+1000  -  8
+1001  -  9
+1010  -  A
+1011  -  B
+1100  -  C
+1101  -  D
+1110  -  E
+1111  -  F
+
+
+
+*stack*
+.______. 0xbffff7bc - 1011 1111 1111 1111 1111 0111 1011 1100 - password_buffer
+|__pb__| 0xbffff7a0 - 1011 1111 1111 1111 1111 0111 1010 0000 - auth_flag
+|__af__|
+
+
+
+gcc exploit_notesearch.c -static -fno-stack-protector -z norelro -ggdb
+gcc -ggdb -fno-stack-protector -U_FORTIFY_SOURCE -Wa,--execstack -o auth_overflow auth_overflow.c
