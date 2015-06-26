@@ -1,4 +1,4 @@
-
+// http://www.tenouk.com/Module40.html
 int connectsoc(const char *host, const char *service, const char *transport) {
    struct hostent     *phe;    // pointer to host information entry
    struct servent     *pse;    // pointer to service information entry
