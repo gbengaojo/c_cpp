@@ -26,3 +26,5 @@
 
 gcc exploit_notesearch.c -static -fno-stack-protector -z norelro -ggdb
 gcc -ggdb -fno-stack-protector -U_FORTIFY_SOURCE -Wa,--execstack -o auth_overflow auth_overflow.c
+
+bump push
