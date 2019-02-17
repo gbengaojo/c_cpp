@@ -354,7 +354,7 @@ people who made it possible.
 * Greets to the whole dc-stuff crew.
 * Greets to the STUPH, Turntec, L0pht, TACD, the Guild, cDc, and all the other
   groups who help keep the scene alive.
-* Shout out to _eci for disclosing the coolest Windows bug in recent history.
+* Shout out to eci for disclosing the coolest Windows bug in recent history.
 * Thanks to the Data Haven Project (dhp.com) admins for providing such great
   service for $10/month.  
 * And a special shout out goes to all my friends.  You know who
