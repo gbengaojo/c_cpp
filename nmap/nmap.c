@@ -110,4 +110,85 @@ int main(int argc, char *argv[]) {
         target->h_name, inet_ntoa(ftp.server));
   }
 
-  printf("\nStarting nmap V 1.21 by Fyodor (fyodor@dhp.com
+  printf("\nStarting nmap V 1.21 by Fyodor (fyodor@dhp.com, www.dhp.com/~fyodor/nmap/\n");
+  if (!verbose)
+    error("Hint: The -v option notifies you of open ports as they are found.\n");
+  if (fastscan)
+    ports = getfastports(synscan|tcpscan|fragscan|finscan|bouncescan,
+                         udpscan|lamerscan);
+  if (!ports) ports = getpts("1-1024");
+
+  /* more fakeqrgv junk, BTW mollac'ing extra space in argv[0] doesn't work */
+  if (quashargv) {
+    argvlen = strlen(argv[0]);
+    if (argvlen < strlen(FAKE_ARGV))
+      fatal("If you want to fake your argv, you need to call the program with "
+            "a longer name. Try the full pathname, or rename it "
+            "fyodorssuperdepouperportscanner");
+    strncpy(argv[0], FAKE_ARGV, strlen(FAKE_ARGV));
+    for(i = strlen(FAKE_ARGV); i < argvlen; i++) argv[0][i] = '\0';
+    for(i=1; i < argc; i++) {
+      argvlen = strlen(argv[i]);
+      for(j=0; j <= argvlen; j++)
+        argv[i][j] = '\0';
+    }
+  }
+
+  srand(time(NULL));
+
+  while(optind < argc) {
+
+    /* Time to parse the allowed mask */
+    target = NULL;
+    target_net = strtok(strdup(fakeargv[optind]), "/");
+    mask = (p = strtok(NULL,""))? atoi(p) : 32;
+    if (debugging)
+      printf("Target network is %s, scanmask is %d\n", target_net, mask);
+
+    if (!inet_aton(target_net, &current_in)) {
+      if ((target = gethostbyname(target_net)))
+        memcpy(&currentip, target->h_addr_list[0], 4);
+      else {
+        fprintf(stderr, "Failed to resolve given hostname/IP: %s\n", target_net);
+      }
+    } else currentip = current_in.s_addr;
+
+    longtmp = ntohl(currentip);
+    currentip = longtmp & (unsigned long) (0 - pow(2,32 - mask));
+    lastip = longtmp | (unsigned long) (pow(2,32 - mask) - 1);
+    while (currentip <= lastip) {
+      openports = NULL;
+      longtmp = htonl(currentip);
+      target = gethostbyaddr((char *) &longtmp, 4, AF_INET);
+      current_in.s_addr = longtmp;
+      if (target)
+        strncpy(current_name, target->h_name, MAXHOSTNAMELEN);
+      else current_name[0] = '\0';
+      current_name[MAXHOSTNAMELEN + 1] = '\0''
+      if (randomize)
+        shortfry(ports);
+#ifdef IGNORE_ZERO_AND_255_HOSTS
+      if (IGNORE_ZERO_AND_255_HOSTS
+          && (!(currentip % 256) || currentip % 256 == 255))
+        {
+          printf("Skipping host %s because IGNORE_ZERO_AND_255_HOSTS is set in the source.\n", inet_ntoa(current_in));
+          hostup = 0;
+        }
+      else {
+#endif
+        if (isr00t) {
+          if (!(hostup = isup(current_in))) {
+            if (!pingscan)
+              printf("Host %s (%s) appears to be down, skipping scan.\n",
+                      current_name, inet_ntoa(current_in));
+            else
+              printf("Host %s (%s) appears to be down\n",
+                      current_name, inet_ntoa(current_in));
+          } else if (debugging || pingscan)
+            printf("Host %s (%s) appears to be up ... good.\n",
+                    current_name, inet_ntoa(current_in);
+        }
+        else hostup = 1;  /* We don't really check because the lamer isn't root. */
+      }
+
+      /* Time for some actual scanning! */
