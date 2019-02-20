@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
 
   srand(time(NULL));
 
-  while(optind < argc) {
+  while (optind < argc) {
 
     /* Time to parse the allowed mask */
     target = NULL;
@@ -192,3 +192,34 @@ int main(int argc, char *argv[]) {
       }
 
       /* Time for some actual scanning! */
+      if (hostup) {
+        if (tcpscan) tcp_scan(current_in, ports, &openports);
+
+        if (synscan) syn_scan(current_in, ports, source, fragscan, &openports);
+
+        if (bouncescan) {
+          if (ftp.sd <= 0) ftp_anon_connect(&ftp);
+          if (ftp.sd > 0) bounce_scan(current_in, ports, &ftp, &openports);
+        }
+        if (udpscan) {
+          if (!isr00t || lamerscan)
+            lamer_udp_scan(current_in, ports, &openports)
+          else udp_scan(current_in, ports, &openports)
+        }
+
+        if (!openports && !pingscan)
+          printf("No ports open for host %s (%s)\n", current_name,
+                  inet_ntoa(current_in));
+        if (openports) {
+          printf("Open ports on %s (%s):\n", current_name,
+                  inet_ntoa(current_in));l
+          printandfreeports(openports);
+        }
+      }
+      currentip++;
+    }
+    optind++;
+  }
+}
+
+return 0;
