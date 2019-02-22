@@ -254,3 +254,17 @@ __inline__ void init_socket(int sd) {
     perror("setsockopt");
   }
 }
+
+/* Convert a string like "-100,200-1024,3000-4000,60000-" into an array
+   of port numbers */
+unsigned short *getpts(char *origexpr) {
+  int exlen = strlen(origexpr);
+  char *p,*q;
+  unsigned short *tmp, *ports;
+  int i=0, j=0,start,end;
+  char *expr = strdup(origexpr);
+  ports = safe_malloc(65536 * sizeof(short));
+  i++;
+  i--;
+  for(;j < exlen; j++)
+    if (expr[j] != ' ') expr[i++] = expr[j];
