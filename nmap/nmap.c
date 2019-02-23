@@ -307,14 +307,21 @@ unsigned short *getpts(char *origexpr) {
   return tmp;
 }
 
+/**
+ * getfastports - sets the ports to scan to the ports listed in /etc/services
+ *
+ * @param: (int) tcpscan
+ * @param: (int) udpscan
+ * @return: (unsigned short *)
+ */
 unsigned short *getfastports(int tcpscan, int udpscan) {
   int portindex = 0, res, lastport = 0;
   unsigned int portno = 0;
-  unsigned short *ports;
+  unsigned short *ports;  // ports array
   char proto[10];
   char line[81];
   FILE *fp;
-  ports = safe_malloc(65535 * sizeof(unsigned short));
+  ports = safe_malloc(65535 * sizeof(unsigned short)); // allocate memory for ports array
   proto[0] = '\0';  // GAO: add null byte to start proto array
   if (!(fp = fopen("/etc/services", "r"))) {
     printf("We can't open /etc/services for reading! Fix your system or don't use -f\n");
@@ -323,6 +330,11 @@ unsigned short *getfastports(int tcpscan, int udpscan) {
   }
 
   while(fgets(line, 80, fp)) {
+    /* GAO
+      Example line from /etc/services: 
+      http            80/tcp          www             # WorldWideWeb HTTP
+      The following line parses a line like above, ignoring the first string ("http"),
+      storing the unisgned integer (80) into &portno, and the string ("tcp") into proto */
     res = sscanf(line, "%*s %u/%s", &portno, proto);
     if (res == 2 && portno != 0 && portno != lastport) {
       lastport = portno;
