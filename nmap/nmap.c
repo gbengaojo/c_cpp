@@ -301,8 +301,39 @@ unsigned short *getpts(char *origexpr) {
   for (j = start; j <= end; j++)
     port[i++] = j;
   number_of_ports = i;
-  ports[i++] = 0;
+  ports[i++] = 0;   // GAO : now we have an array of ports with a sentinel 0 terminator
   tmp = realloc(ports, i * sizeof(short)); // GAO: appears to be doubling the size of the arrray
   free(expr);                              //      pointed to by ports, and renaming to tmp  
   return tmp;
+}
+
+unsigned short *getfastports(int tcpscan, int udpscan) {
+  int portindex = 0, res, lastport = 0;
+  unsigned int portno = 0;
+  unsigned short *ports;
+  char proto[10];
+  char line[81];
+  FILE *fp;
+  ports = safe_malloc(65535 * sizeof(unsigned short));
+  proto[0] = '\0';  // GAO: add null byte to start proto array
+  if (!(fp = fopen("/etc/services", "r"))) {
+    printf("We can't open /etc/services for reading! Fix your system or don't use -f\n");
+    perror("fopen");
+    exit(1);
+  }
+
+  while(fgets(line, 80, fp)) {
+    res = sscanf(line, "%*s %u/%s", &portno, proto);
+    if (res == 2 && portno != 0 && portno != lastport) {
+      lastport = portno;
+      if (tcpscan && proto[0] == 't')
+        ports[portindex++] = portno;
+      else if (udpscan && proto[0] == 'u')
+        ports[portindex++] = portno;
+    }
+  }
+
+  number_of_ports = portindex;
+  ports[portindex++] = 0;
+  return realloc(ports, portindex * sizeof(unsigned short));
 }
