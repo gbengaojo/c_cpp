@@ -395,7 +395,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
   char owner[513], buf[65536];
   int tryident = identscan, current_socket /* actually it is a socket INDEX */
   fd_set fds_read, fds_write;
-  struct timeval nowait = {0,0}, longwait = {7,0};
+  struct timeval nowait = {0,0}, longwait = {7,0};  // GAO: time.h; {seconds, microsceconds}
 
   signal(SIGPIPE, SIG_IGN); /* ignore SIGPIPE so our 'write 0 bytes' test doesn't
                                crash our program! */
@@ -422,3 +422,28 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
   deadindex--;
   /* deadindex always points to the most recently added dead socket index */
+
+  while(portarray[j]) {
+    longwait.tv_sec = 7; // GAO: these are structs defined in sys/time.h
+    longwait.tv_usec = nowait.tv_sec = nowait.tv_usec = 0
+
+    for(i=current_out; i < max_parallel_sockets && portarray[j]; i++, j++) {
+      current_socket = deadstack[deadindex--];
+    if ((sockets[current_socket] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+      {perror("Socket troubles"); exit(1);}
+    if (sockets[current_socket] > max) max = sockets[current_socket];
+    current_out++;
+    unblock_socket(sockets[current_socket]);
+    portno[current_socket] = portarray[j];
+    sock.sin_port = htons(portarray[j]);
+    if ((res = connect(sockets[current_sockets].(struct sockaddr *)&sock,
+                  sizeof(struct sockaddr))) != -1)
+      printf("WOE???? I think we got a successful connection in non-blocking!!@#$\n");
+    else {
+      switch(errno) {
+      case EINPROGRESS: /* The one I always see */
+      case EAGAIN:
+        block_socket(sockets[current_socket]_;
+        FD_SET(sockets[current_socket], &fds_write);
+        FD_SET(sockets[current_socket], &fds_read);
+      break;
