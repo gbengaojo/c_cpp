@@ -322,7 +322,7 @@ unsigned short *getfastports(int tcpscan, int udpscan) {
   char line[81];
   FILE *fp;
   ports = safe_malloc(65535 * sizeof(unsigned short)); // allocate memory for ports array
-  proto[0] = '\0';  // GAO: add null byte to start proto array
+  proto[0] = '\0';  // add null byte to start proto array
   if (!(fp = fopen("/etc/services", "r"))) {
     printf("We can't open /etc/services for reading! Fix your system or don't use -f\n");
     perror("fopen");
@@ -330,8 +330,7 @@ unsigned short *getfastports(int tcpscan, int udpscan) {
   }
 
   while(fgets(line, 80, fp)) {
-    /* GAO
-      Example line from /etc/services: 
+    /*Example line from /etc/services: 
       http            80/tcp          www             # WorldWideWeb HTTP
       The following line parses a line like above, ignoring the first string ("http"),
       storing the unisgned integer (80) into &portno, and the string ("tcp") into proto */
@@ -348,4 +347,38 @@ unsigned short *getfastports(int tcpscan, int udpscan) {
   number_of_ports = portindex;
   ports[portindex++] = 0;
   return realloc(ports, portindex * sizeof(unsigned short));
+}
+
+/**
+ * printusage
+ *
+ * @param: (char *) name
+ * @return: void
+ */
+void printusage(char *name) {
+  printf("%s [options] [hostname[/mask] . . .]
+    options (none are required, most can be combined):
+      -t tcp connect() port scan
+      -s tcp SYN stealth port scan (must be root)
+      -u UDP port scan, will use MUCH better versino if you are root
+      -U Uriel Maimon (P49-15) style FIN stealth scan.
+      -l Do the lamer UDP scan even if root. Less accurate.
+      -P pint \"scan\". Find which hosts on specified network(s) are up.
+      -b <ftp_relay_host> ftp \"bounce attack\" port scan
+      -f use tiny fragmented packets for SYN or FIN scan.
+      -i Get identd (rfc 1413) info on listening TCP processes.
+      -p <range> ports: ex: \'-p 23\' will only try port 23 of the host(s)
+                     \'-p 20-30,63000-\' scans 20-30 and 63000-65535 default: 1-1024
+      -F fast scan. Only scans ports in /etc/services, a la strobe(1)
+      -r randomize target port scanning order.
+      -h help, print this junk. Also see http://www.dhp.com/~fyodor/nmap/
+      -S If you want to specify the source address of SYN or FYN scan
+      -v Verbose. Its use is recommended. Use twice for greater effect.
+      -w <n> delay. n microsecond delay. Not recommended unless needed.
+      -M <n> maximum number of parallel sockets. Larger isn't always better.
+      -q quash argv to something benign. currently set to \"%s\".
+    Hostnames are specified as internet hostname or IP address. Optional '/mask'
+    specifies subnet. cert.org/24 or 192.88.209.5/24 scan CERT's Class C.\n",
+        name, FAKE_ARGV);
+  exit(1);
 }
