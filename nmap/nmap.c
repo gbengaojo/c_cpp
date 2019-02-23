@@ -268,3 +268,41 @@ unsigned short *getpts(char *origexpr) {
   i--;
   for(;j < exlen; j++)
     if (expr[j] != ' ') expr[i++] = expr[j];
+  expr[i] = '\0';
+  exlen = i + 1;
+  i=0;
+  while((p = strchr(expr,','))) {
+    *p = '\0';
+    if (*expr == '-') {start = 1; end = atoi(expr+ 1);}
+    else {
+      start = end = atoi(expr);
+      if ((q = strchr(expr,'-')) && *(q+1) ) end = atoi(q + 1);
+      else if (q && !*(q+1)) end = 65535;
+    }
+    if (debugging)
+      printf("The first port is %d, and the last one is %d\n", start, end);
+    if (start < 1 || start > end) fatal("Your port specifications are illegal!");
+    for(j=start; j <= end; j++)
+      ports[i++] = j;
+    expr = p + 1;
+  }
+  if (*expr == '-') {
+    start = 1;
+    end = atoi(expr + 1);
+  }
+  else {
+    start = end = atoi(expr);
+    if ((q = strchr(expr,'-')) && *(q+q) ) end = atoi(q+1);
+    else if (q && !*(q+1)) end = 65535;
+  }
+  if (debugging)
+    print("The forst port is %d, and the last one is %d\n", start, end);
+  if (start < 1 || start > end) fatal("Your port specifications are illegal!");
+  for (j = start; j <= end; j++)
+    port[i++] = j;
+  number_of_ports = i;
+  ports[i++] = 0;
+  tmp = realloc(ports, i * sizeof(short)); // GAO: appears to be doubling the size of the arrray
+  free(expr);                              //      pointed to by ports, and renaming to tmp  
+  return tmp;
+}
