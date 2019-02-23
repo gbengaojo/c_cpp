@@ -382,3 +382,43 @@ void printusage(char *name) {
         name, FAKE_ARGV);
   exit(1);
 }
+
+/**
+ * tcp_scan
+ */
+portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *ports) {
+  int starttime, current_out = 0, res, deadindeax = 0, i=0, j=0, k=0, max=0;
+  struct sockaddr_in sock, stranger, mysock;
+  int sockaddr_in_len = sizeof(struct sockaddr_in);
+  int sockets[max_parallel_sockets], deadstack[max_parallel_sockets];
+  unsigned short portno[max_parallel_sockets];
+  char owner[513], buf[65536];
+  int tryident = identscan, current_socket /* actually it is a socket INDEX */
+  fd_set fds_read, fds_write;
+  struct timeval nowait = {0,0}, longwait = {7,0};
+
+  signal(SIGPIPE, SIG_IGN); /* ignore SIGPIPE so our 'write 0 bytes' test doesn't
+                               crash our program! */
+  owner[0] = '\0';
+  starttime = time(NULL);
+  bzero((char *)&sock, sizeof(struck sockadd_in)); // GAO: place sizeof(struct sockadd_in) 0
+                                                   // bytes at the address of &sock
+  sock.sin_addr.s_addr = target.s_addr;
+  if (verbose || debugging)
+    printf("Initiating TCP connect() scan against %s (%s)\n",
+      current_name, inet_ntoa(sock.sin_addr));
+  sock.sin_family=AF_INET;
+  FD_ZERO(&fds_read); // GAO: Initializes the file descriptor sets (fd_set) fds_read and 
+  FD_ZERO(&fds_write);//      (fd_set) fds_write to zero for all file descriptors.
+
+  if (tryident)
+    tryident = check_ident_port(target);
+
+  /* Initially, all of our sockets are "dead" */
+  for (i = 0; i < max_parallel_sockets; i++) {
+    deadstack[deadindex++] = i;
+    portno[i] = 0;
+  }
+
+  deadindex--;
+  /* deadindex always points to the most recently added dead socket index */
