@@ -429,30 +429,117 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
     for(i=current_out; i < max_parallel_sockets && portarray[j]; i++, j++) {
       current_socket = deadstack[deadindex--];
-    if ((sockets[current_socket] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
-      {perror("Socket troubles"); exit(1);}
-    if (sockets[current_socket] > max) max = sockets[current_socket];
-    current_out++;
-    unblock_socket(sockets[current_socket]);
-    portno[current_socket] = portarray[j];
-    sock.sin_port = htons(portarray[j]);
-    if ((res = connect(sockets[current_sockets].(struct sockaddr *)&sock,
-                  sizeof(struct sockaddr))) != -1)
-      printf("WOE???? I think we got a successful connection in non-blocking!!@#$\n");
-    else {
-      switch(errno) {
-      case EINPROGRESS: /* The one I always see */
-      case EAGAIN:
-        block_socket(sockets[current_socket]_;
-        FD_SET(sockets[current_socket], &fds_write);
-        FD_SET(sockets[current_socket], &fds_read);
-      break;
-      default:
-        printf("Strange error from connect: (%d)", errno); perror("") /* falling through intentionally*/
-      case ECONNREFUSED:
-        if (max == sockets[current_socket]) max--;
-        deadstack[++deadindex] = current_socket;
-        current_out--;
-        portno[current_socket] = 0;
-        close(sockets[current_socket]);
-      break;
+      if ((sockets[current_socket] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+        {perror("Socket troubles"); exit(1);}
+      if (sockets[current_socket] > max) max = sockets[current_socket];
+      current_out++;
+      unblock_socket(sockets[current_socket]);
+      portno[current_socket] = portarray[j];
+      sock.sin_port = htons(portarray[j]);
+      if ((res = connect(sockets[current_sockets].(struct sockaddr *)&sock,
+                    sizeof(struct sockaddr))) != -1)
+        printf("WOE???? I think we got a successful connection in non-blocking!!@#$\n");
+      else {
+        switch(errno) {
+          case EINPROGRESS: /* The one I always see */
+          case EAGAIN:
+            block_socket(sockets[current_socket]_;
+            FD_SET(sockets[current_socket], &fds_write);
+            FD_SET(sockets[current_socket], &fds_read);
+          break;
+          default:
+            printf("Strange error from connect: (%d)", errno); perror("") /* falling through intentionally*/
+          case ECONNREFUSED:
+            if (max == sockets[current_socket]) max--;
+            deadstack[++deadindex] = current_socket;
+            current_out--;
+            portno[current_socket] = 0;
+            close(sockets[current_socket]);
+          break;
+        }
+      }
+    }
+    if (!portarray[j]) sleep(1); /* wait a second for any last packets */
+    while ((res = select( max + 1, &fds_read, &fds_write, NULL,
+              (current_out < max_parallel_sockets) ? &nowait : &longwait) ) > 0) {
+      for (k = 0; k < max_parallel_sockets; k++)
+        if (portno[k]) {
+          if (FD_ISSET(sockets[k], &fds_write) && FD_ISSET(sockets[k], &fds_read)) {
+            /* printf("Socket at port %hi is selcetable for r/w.", portno[k]); */
+            res = recvfrom(sockets[k], buf, 65536, 0, (struct sockaddr *)
+                    & stranger, &sockaddr_in_len);
+            if (res >= 0) {
+              if (debugging || verbose)
+                printf("Adding TCP port %hi due to successful read.\n", portno[k]);
+              if (tryident) {
+                if (getsockname(sockets[k], (struct sockaddr *) &mysock, &sockaddr_in_len)) {
+                  perror("getsockname");
+                  exit(1);
+                }
+                tryident = getindentinfoz(target, ntohs(mysock.sin_port),
+                            portno[k], owner);
+              }
+              addport(ports, portno[k], IPPROTO_TCP, owner);
+            }
+            if (max == sockets[k])
+              max--;
+            FD_CLR(sockets[k], &fds_read);
+            FD_CLR(sockets[k], &fds_write);
+            deadstack[++deadindex] = k;
+            current_out--;
+            portno[k] = 0;
+            close(sockets[k]);
+          }
+          else if (FD_ISSET(sockets[k], &fds_write)) {
+            /* printf("Socket at port %hi is selectable for w only.VERIFYING\n", portno[k]); */
+            res = send(sockets[k], buf, 0, 0);
+            if (res < 0) {
+              signal(SIGPIPE, SIG_IGN);
+              if (debugging > 1)
+                printf("Bad port %hi caught by 0-byte write!\n", portno[k]);
+            }
+            else {
+              if (debugging || verbose)
+                printf("Adding TCP port %hi due to successful 0-byte write!\n",
+                  portno[k]);
+              if (tryident) {
+                if (getsockname(sockets[k], (struct sockaddr *) &mysock,
+                      &sockaddr_in_len)) {
+                  perror("getsockname");
+                  exit(1);
+                }
+                tryident = getidentinfoz(target, ntohs(mysock.sin_port), portno[k], owner);
+              }
+              addport(ports, portno[k], IPPROTO_TCP, owner);
+            }
+            if (max == sockets[k]) max--;
+            FD_CLR(sockets[k], &fds_write);
+            deadstack[++deadindex] = k;
+            current_out--;
+            portno[k] = 0;
+            close(sockets[k]);
+          }
+          else if (FD_ISSET(sockets[k], &fds_read)) {
+            printf("Socket at port %hi is selectable for r only. This is very weird.\n",
+                      portno[k]);
+            if (max == sockets[k]) max--;
+            FD_CLR(sockets[k], &fds_read);
+            deadstack[++deadindex] = k;
+            current_out--;
+            portno[k] = 0;
+            close(sockets[k]);
+          }
+          else {
+            /* printf("Socket at port %hi not selecting. reading.\n", portno[k]); */
+            FD_SET(sockets[k], &fds_write);
+            FD_SET(sockets[k], &fds_read);
+          }
+        }
+      } 
+    }
+
+    if (debugging || verbose)
+      printf("Scanned %d ports in %ld seconds with %d parallel sockets.\n",
+        number_of_ports, time(NULL) - starttime, max_parallel_sockets);
+    return *ports;
+  }
