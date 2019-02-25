@@ -447,3 +447,12 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         FD_SET(sockets[current_socket], &fds_write);
         FD_SET(sockets[current_socket], &fds_read);
       break;
+      default:
+        printf("Strange error from connect: (%d)", errno); perror("") /* falling through intentionally*/
+      case ECONNREFUSED:
+        if (max == sockets[current_socket]) max--;
+        deadstack[++deadindex] = current_socket;
+        current_out--;
+        portno[current_socket] = 0;
+        close(sockets[current_socket]);
+      break;
