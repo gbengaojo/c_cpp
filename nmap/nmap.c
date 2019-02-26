@@ -20,6 +20,8 @@ int main(int argc, char *argv[]) {
   short fragscan = 0, finscan = 0, quashargv = 0, pingscan = 0, lamerscan = 0;
   short bouncescan = 0;
   short *ports = NULL, mask;
+  struct ftpinfo ftp = { FTPUSER, FTPPASS, "", { 0 }, 21, 0};
+  portlist openports = NULL;
   struct hostent *target_net, *p;
   unsigend long int lastip, currentip, longtmp;
   char *target_net, *p;
