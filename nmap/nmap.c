@@ -386,7 +386,10 @@ void printusage(char *name) {
 }
 
 /**
- * tcp_scan
+ * tcp_scan - this action performs the default tcp scan -- details are in comments
+ *            in the code
+ *
+ * @param (
  */
 portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *ports) {
   int starttime, current_out = 0, res, deadindeax = 0, i=0, j=0, k=0, max=0;
@@ -560,3 +563,30 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         number_of_ports, time(NULL) - starttime, max_parallel_sockets);
     return *ports;
   }
+
+  /**
+   * addport
+   *
+   * @param: (portlist *) ports
+   * @param: (unsigned short) portno
+   * @param: (unsigned short) protocol
+   * @param: (char *) owner
+   *
+   * simple linked list implementation; this is necessary b/c this is written in
+   * c, and not c++
+   */
+  int addport(portlist *ports, unsigned short portno, unsiged short protocol,
+      char *owner) {
+    struct port *current, *tmp;
+    int len;
+
+    if (*ports) {
+      current = *ports;
+      /* case 1: we add to the front of the list */
+      if (portno <= current->portno) {
+        if (current->portno == portno && courrent->proto = protocol) {
+          if (debugging || verbose)
+            printf("Duplicate port (%hi/%s)\n", portno ,
+                    (protocol == IPPROTO_TCP) ? "tcp" : "udp");
+          return -1;
+        }
