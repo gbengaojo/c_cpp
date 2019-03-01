@@ -451,7 +451,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     for(i = current_out; i < max_parallel_sockets && portarray[j]; i++, j++) {
       current_socket = deadstack[deadindex--]; // deadindex is counting down from ~mps
 
-      /*
+      /* vvv
        The first use of the socket() call - for details, see
        https://docs.oracle.com/cd/E19620-01/805-4041/6j3r8iu2l/index.html
                     s = socket(domain, type, protocol)
@@ -466,25 +466,33 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       unblock_socket(sockets[current_socket]); // defined inline above (~ line 230)
       portno[current_socket] = portarray[j];   // set the portno to the appropriate portarray[j] passed in
       sock.sin_port = htons(portarray[j]);  // rearrange bits and assign port to sock.sin_port
-      /*
+
+      /* vvv
        The first use of the connect() call - for details, see
        https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.bpxbd00/connect.htm
       int connect(int socket, const struct sockaddr *address, socklen_t address_len);
       */
-      if ((res = connect(sockets[current_sockets].(struct sockaddr *)&sock,
+      if ((res = connect(sockets[current_sockets], (struct sockaddr *)&sock,
                     sizeof(struct sockaddr))) != -1)
         printf("WOE???? I think we got a successful connection in non-blocking!!@#$\n");
-      else {
+      else {  // some error was thrown -- see above for url
         switch(errno) {
+        /*
+          FD_SET(fd, &fdset)
+            Sets the bit for the file descriptor fd in the file descriptor set fdset.
+          See https://www.mkssoftware.com/docs/man3/select.3.asp
+        */
           case EINPROGRESS: /* The one I always see */
           case EAGAIN:
-            block_socket(sockets[current_socket]_;
-            FD_SET(sockets[current_socket], &fds_write);
+            block_socket(sockets[current_socket]);       // block socket (see inline above)
+            FD_SET(sockets[current_socket], &fds_write); 
             FD_SET(sockets[current_socket], &fds_read);
           break;
           default:
             printf("Strange error from connect: (%d)", errno); perror("") /* falling through intentionally*/
           case ECONNREFUSED:
+            // if there was some implicit or explicit socket connection error, reset
+            // all relevant variables and counters, and close the current socket attempt
             if (max == sockets[current_socket]) max--;
             deadstack[++deadindex] = current_socket;
             current_out--;
@@ -494,6 +502,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         }
       }
     }
+
     if (!portarray[j]) sleep(1); /* wait a second for any last packets */
     while ((res = select( max + 1, &fds_read, &fds_write, NULL,
               (current_out < max_parallel_sockets) ? &nowait : &longwait) ) > 0) {
