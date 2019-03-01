@@ -421,7 +421,8 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
                                crash our program! */
   owner[0] = '\0';
   starttime = time(NULL);
-  bzero((char *)&sock, sizeof(struck sockadd_in)); // GAO: place {sizeof(struct sockadd_in)} 0
+  // first use of "sock" variable, via address (&); appears to be the declaration
+  bzero((char *)&sock, sizeof(struck sockadd_in)); // place {sizeof(struct sockadd_in)} 0
                                                    // bytes at the memory address of &sock
   sock.sin_addr.s_addr = target.s_addr;
   if (verbose || debugging)
@@ -447,15 +448,29 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     longwait.tv_sec = 7; // these are structs defined in sys/time.h
     longwait.tv_usec = nowait.tv_sec = nowait.tv_usec = 0
 
-    for(i=current_out; i < max_parallel_sockets && portarray[j]; i++, j++) {
-      current_socket = deadstack[deadindex--];
+    for(i = current_out; i < max_parallel_sockets && portarray[j]; i++, j++) {
+      current_socket = deadstack[deadindex--]; // deadindex is counting down from ~mps
+
+      /*
+       The first use of the socket() call - for details, see
+       https://docs.oracle.com/cd/E19620-01/805-4041/6j3r8iu2l/index.html
+                    s = socket(domain, type, protocol)
+       AF_INET -> Internet domain
+      */
       if ((sockets[current_socket] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
         {perror("Socket troubles"); exit(1);}
+
+      // here sockets[current_socket] is what's returned by a successful socket() call
       if (sockets[current_socket] > max) max = sockets[current_socket];
-      current_out++;
-      unblock_socket(sockets[current_socket]);
-      portno[current_socket] = portarray[j];
-      sock.sin_port = htons(portarray[j]);
+      current_out++; // why are we incrementing this?
+      unblock_socket(sockets[current_socket]); // defined inline above (~ line 230)
+      portno[current_socket] = portarray[j];   // set the portno to the appropriate portarray[j] passed in
+      sock.sin_port = htons(portarray[j]);  // rearrange bits and assign port to sock.sin_port
+      /*
+       The first use of the connect() call - for details, see
+       https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.bpxbd00/connect.htm
+      int connect(int socket, const struct sockaddr *address, socklen_t address_len);
+      */
       if ((res = connect(sockets[current_sockets].(struct sockaddr *)&sock,
                     sizeof(struct sockaddr))) != -1)
         printf("WOE???? I think we got a successful connection in non-blocking!!@#$\n");
