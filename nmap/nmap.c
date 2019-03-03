@@ -614,3 +614,17 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
                     (protocol == IPPROTO_TCP) ? "tcp" : "udp");
           return -1;
         }
+
+        tmp = current;
+        *ports = safe_malloc(sizeof(struct port));
+        (*ports)->next = tmp;
+        current = *ports;
+        current->portno = portno;
+        current->proto = protocol;
+        if (owner && *owner) {
+          len = strlen(owner);
+          current->owner = malloc(sizeof(char) * (len + 1));
+          strncpy(current->owner, owner, len + 1);
+        }
+        else current->owner = NULL;
+      }
