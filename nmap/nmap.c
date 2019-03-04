@@ -520,13 +520,19 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       FD_CLR(int fd, fd_set *set);
       FD_ISSET(int fd, fd_set *set);
       FD_ZERO(fd_set *set);
+
+      while select(...) > 0,
+        for (k = 0 to max_parallel_sockets)
+          if portno[k] exists and
+            if (sockets[k] is readable and writeable (FD_ISSET(sockets[k]...) then
+              [Sockets at portno[k] is r/w]
     */
     while ((res = select( max + 1, &fds_read, &fds_write, NULL,
               (current_out < max_parallel_sockets) ? &nowait : &longwait) ) > 0) {
       for (k = 0; k < max_parallel_sockets; k++)
         if (portno[k]) {
           if (FD_ISSET(sockets[k], &fds_write) && FD_ISSET(sockets[k], &fds_read)) {
-            /* printf("Socket at port %hi is selcetable for r/w.", portno[k]); */
+            /* printf("Socket at port %hi is selectable for r/w.", portno[k]); */
             res = recvfrom(sockets[k], buf, 65536, 0, (struct sockaddr *)
                     & stranger, &sockaddr_in_len);
             if (res >= 0) {
