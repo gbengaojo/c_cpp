@@ -628,3 +628,17 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         }
         else current->owner = NULL;
       }
+      else { /* case 2: we add somewhere in the middle or end of the list */
+        while( current->next && current->next->portno < portno)
+          current = current->next;
+        if (current->next && current->next->portno == portno
+              && current->next->proto == protocol) {
+          if (debugging || verbose)
+            printf("Duplicate port (%hi/%s)\n", portno,
+              (protocol == IPPROTO_TCP) ? "tcp" : "udp");
+            return -1;
+        }
+        tmp = current->next;
+        current->next = safe_malloc(sizeof(struct port));
+        current->next->next = tmp;
+
