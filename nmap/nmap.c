@@ -408,7 +408,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
          sizeof (struct in_addr)];
      };
   */
-  struct sockaddr_in sock, stranger, mysock;  // structures describing an Internet socket address (see above); defined in `defined in <netinet/in.h>
+  struct sockaddr_in sock, stranger, mysock; // see above; defined in <sys/netinet/in.h>
   int sockaddr_in_len = sizeof(struct sockaddr_in);
   int sockets[max_parallel_sockets], deadstack[max_parallel_sockets];
   unsigned short portno[max_parallel_sockets];
@@ -428,7 +428,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
   if (verbose || debugging)
     printf("Initiating TCP connect() scan against %s (%s)\n",
       current_name, inet_ntoa(sock.sin_addr));
-  sock.sin_family = AF_INET;
+  sock.sin_family = AF_INET; // address family -> Internet Address
   FD_ZERO(&fds_read); // GAO: Initializes the file descriptor sets (fd_set) fds_read and 
   FD_ZERO(&fds_write);//      (fd_set) fds_write to zero for all file descriptors.
 
@@ -503,7 +503,24 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       }
     }
 
+    // portarray passed to this function
     if (!portarray[j]) sleep(1); /* wait a second for any last packets */
+    /*
+      select() - defined in sys/select.h
+      Checks if socket descriptors are ready for read/write ops
+      see `man select' -or-
+        https://beej.us/guide/bgnet/html/multi/selectman.html
+
+      #include <sys/select.h>
+
+      int select(int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
+                 struct timeval *timeout);
+
+      FD_SET(int fd, fd_set *set);
+      FD_CLR(int fd, fd_set *set);
+      FD_ISSET(int fd, fd_set *set);
+      FD_ZERO(fd_set *set);
+    */
     while ((res = select( max + 1, &fds_read, &fds_write, NULL,
               (current_out < max_parallel_sockets) ? &nowait : &longwait) ) > 0) {
       for (k = 0; k < max_parallel_sockets; k++)
