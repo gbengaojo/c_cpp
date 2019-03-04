@@ -599,8 +599,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    * simple linked list implementation; this is necessary b/c this is written in
    * c, and not c++
    */
-  int addport(portlist *ports, unsigned short portno, unsiged short protocol,
-      char *owner) {
+  int addport(portlist *ports, unsigned short portno, unsiged short protocol, char *owner) {
     struct port *current, *tmp;
     int len;
 
@@ -641,4 +640,29 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         tmp = current->next;
         current->next = safe_malloc(sizeof(struct port));
         current->next->next = tmp;
+        tmp = current->next;
+        tmp->portno = portno;
+        if (owner && *owner) {
+          len = strlen(owner);
+          tmp->owner = malloc(sizeof(char) * (len + 1));
+          strncpy(tmp->owner, owner, len + 1);
+        }
+        else tmp->owner = NULL;
+      }
+    }
+    else { /* case 3: list is null */
+      *ports = safe_malloc(sizeof(struct port));
+      tmp = *ports;
+      tmp->portno = portno;
+      tmp->proto = protocol;
+      if (owner && *owner) {
+        len = strlen(owner);
+        tmp->owner = safe_malloc(sizeof(char) * (len + 1));
+        strncpy(tmp->owner, owner, len + 1);
+      }
+      else tmp->owner = NULL;
+      tmp->next = NULL;
+    }
 
+    return 0; // success
+  }
