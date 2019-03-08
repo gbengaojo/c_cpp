@@ -619,8 +619,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    * @param: (unsigned short) protocol
    * @param: (char *) owner
    *
-   * simple linked list implementation; this is necessary b/c this is written in
-   * c, and not c++
+   * simple linked list implementation for our set of ports
    */
   int addport(portlist *ports, unsigned short portno, unsiged short protocol, char *owner) {
     struct port *current, *tmp;
@@ -727,3 +726,18 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
     return 0; /* success */
   } 
+
+  /**
+   * safe_malloc - an attempt at safe memory allocation in c
+   *
+   * @param: (int) size
+   * @return: (void *)
+   */
+  void *safe_malloc(int size) {
+    void *mymem;
+    if (size < 0)
+      fatal("Tried to malloc negative amount of memory!!!");
+    if ((mymem = malloc(size)) == NULL)
+      fatal("Malloc Failed! Probably out of space.");
+    return mymem;
+  }
