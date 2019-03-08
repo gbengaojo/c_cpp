@@ -741,3 +741,30 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       fatal("Malloc Failed! Probably out of space.");
     return mymem;
   }
+
+  /**
+   * printandfreeports
+   *
+   * @param: (portlist) ports
+   * @return: (void)
+   */
+  void printandfreeports(portlist ports) {
+    char protocol[4];
+    struct servant *service;
+    port *current = ports, *tmp;
+
+    printf("Port Number  Protocol  Service");
+    printf("%s", (identscan) ? "        Owner\n" : "\n");
+    while (current != NULL) {
+      strcpy(protocol, (current->proto == IPPROTO_TCP) ? "tcp" : "udp");
+      service = getservbyport(htons(current->portno), protocol);
+      printf("%-13d%-11s%-16s%s\n", current->portno, protocol,
+        (service) ? service->s_name : "unknown",
+        (current->owner) ? current->owner : "");
+      tmp = current;
+      current = current->next;
+      if (tmp->owner) free(tmp->owner);
+      free(tmp);
+    }
+    printf("\n");
+  }
