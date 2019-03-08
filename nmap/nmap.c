@@ -689,3 +689,41 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
     return 0; // success
   }
+
+  /**
+   * deleteport
+   *
+   * @param: (portlist *) ports
+   * @param: (unsigned short) portno
+   * @param: (unsigned short) protocol
+   * @return: (int)
+   */
+  int deleteport(portlist *ports, unsigned short portno, unsigned short protocol) {
+    portlist current, tmp;
+
+    if (!*ports) {
+      if (debugging > 1) error("Tried to delete from empty port list!");
+      return -1;
+    }
+
+    /* Case 1, deletion from front of list */
+    if ((*ports)->portno == portno && (*ports)->proto == protocol) {
+      tmp = (*ports)->next;
+      if ((*ports)->owner) free((*ports)->owner);
+      free(*ports);
+      *ports = tmp;
+    }
+    else {
+      current = *ports;
+      for (; current->next && (current->next->portno != portno ||
+              current->next->proto != protocol); current = current->next);
+      if (!current->next)
+        return -1;
+      tmp = current->next;
+      current->next = tmp->next;
+      if (tmp->owner) free(tmp->owner);
+      free(tmp);
+    }
+
+    return 0; /* success */
+  } 
