@@ -21,7 +21,18 @@ int main(int argc, char *argv[]) {
   short bouncescan = 0;
   short *ports = NULL, mask;
   struct ftpinfo ftp = { FTPUSER, FTPPASS, "", { 0 }, 21, 0};
-  portlist openports = NULL;
+  /**
+    (portlist)                                  defined in nmap.h, line 79:
+      typedef port *portlist
+    (port)                                      defined in nmap.h, line 63:
+      typedef struct port {
+        unsigned short portno;
+        unsiged char proto;
+        char *owner;
+        struct port *next;
+      } port
+  **/
+  portlist openports = NULL; 
   struct hostent *target_net, *p;
   unsigend long int lastip, currentip, longtmp;
   char *target_net, *p;
