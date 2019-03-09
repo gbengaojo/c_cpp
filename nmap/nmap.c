@@ -32,7 +32,16 @@ int main(int argc, char *argv[]) {
         struct port *next;
       } port
   **/
-  portlist openports = NULL; 
+  portlist openports = NULL;
+  /*
+    hostent - defined in /sysroot/usr/include/netdb.h; see man gethostbyname(3)
+    struct hostent {
+      char *h_name; // official name of host
+      char **h_aliases; // alias list
+      int h_addrtype; // host address type
+      int h_length; // length of address
+      char **h_addr_list; // list of addresses from name server
+  */
   struct hostent *target_net, *p;
   unsigend long int lastip, currentip, longtmp;
   char *target_net, *p;
