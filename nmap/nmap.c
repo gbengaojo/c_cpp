@@ -788,3 +788,13 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     }
     printf("\n");
   }
+
+  /**
+   * udp_scan - this is the version of upd_scan that uses raw ICMP sockets and
+   *  requires root privileges.
+   *
+   * @param: (struct in_addr) target
+   * @param: (unsigned short *) portarry
+   * @param: (portlist *) ports
+   * @return: (portlist)
+   */
