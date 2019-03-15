@@ -798,3 +798,66 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    * @param: (portlist *) ports
    * @return: (portlist)
    */
+  portlist udp_scan(struct in_addr target, unsigned short *portarray, portlist *ports) {
+    int icmpsock, udpsock, tmp, done = 0, retries, bytes = 0, res, num_out = 0;
+    int i = 0, j = 0, k = 0, icmperrlimittime, max_tries = UDP_MAX_PORT_RETRIES;
+    unsiged short outports[max_parallel_sockets], numbrites[max_parallel_sockets];
+    struct sockaddr_in her;
+    char senddata[] = "blah\n";
+    unsigned long starttime, sleeptime;
+    struct timeval shortwait = {1, 0};
+    fd_set fds_read, fds_write;
+
+    bzero(outports, max_parallel_sockets * sizeof(unsigned short));
+    bzero(numtries, max_parallel_sockets * sizeof(unsigned short));
+
+    /* Some systems (like linux) follow the advice of rfc1812 and limit
+     * the rate at which they will respond with ICMP error messages
+     * (like port unreachable). icmperrlimittime is to compensate for that.
+     */
+    icmperrlimittime = 60000;
+
+    sleeptime = (global_delay) ? global_delay : (global_rtt) ? (1.2 * global_rtt) + 30000 : 1e5;
+    if (global_delay) icmperrlimittime = global_dalay;
+
+    starttime = time(NULL);
+
+    FD_ZERO(&fds_read);
+    FD_ZERO(&fds_write);
+
+    if (verbose || debugging)
+      printf("Initiating UDP (raw ICMP version) scan against %s (%s) using wait "
+             "delay of %li usecs.\n", current_name, inet_ntoa(target), sleeptime);
+    
+    if ((icmpsock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0)
+      perror("Opening ICMP RAW socket");
+    if ((udpsock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+      perror("Opening datagram socket");
+
+    unblock_socket(icmpsock);
+    her.sin_addr = target;
+    her.sin_family = AF_INET;
+
+    while(!done) {
+      tmp = num_out;
+      for (i = 0; (i < max_parallel_sockets && portarray[j]) || i < tmp; i++) {
+        close(udpsock);
+        if ((udpsock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+          perror("Opening datagram socket"); 
+        if ((i > tmp && portarray[j]) || numtries[i] > 1) {
+          if (i > tmp) her.sin_port = htons(portarray[j++]);
+          else her.sin_port = htons(outports[i]);
+          FD_SET(udpsock, &fds_write);
+          FD_SET(icmpsock, &fds_read);
+          shortwait.tv_sec = 1; shortwait.tv_usec = 0;
+          usleep(icmperrlimittime);
+          res = select(udpsock + 1, NULL, &fds_write, NULL, &shortwait);
+          if (FD_ISSET(udpsock, &fds_write))
+            bytes = sendto(udpsock, senddata, sizeof(senddata), 0,
+              (struct sockaddr *) &her, sizeof(struct sockaddr_in));
+          else {
+            printf("udpsock not set for writing port %d!", ntohs(her.sin_port));
+            return *ports;
+          }
+      }
+    }
