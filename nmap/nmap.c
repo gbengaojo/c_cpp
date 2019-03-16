@@ -925,3 +925,18 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     close(udpsock);
     return *ports;
   }
+
+  /**
+   * function listen_icmp
+   *
+   * @param: (int) icmpsock
+   * @param: (unsigned short) outports[]
+   * @param: (unsigned short) numtries[]
+   * @param: (int) *num_out
+   * @param: (struct) in_addr target
+   * @param: (portlist *) ports
+   * @return: (int)
+   */
+  int listen_icmp(int icmpsock, unsigned short outports[], unsigned short numtries[],
+      int *num_out, struct in_addr target, portlist *ports) {
+  }
