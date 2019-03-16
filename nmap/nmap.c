@@ -892,7 +892,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       tmp = listem_icmp(icmpsock, outports, numtries, &num_out, target, ports);
       if (debugging) printf("listen_icmp caught %d bad ports.\n", tmp);
       done = !portarray[j];
-      for (i = 0; k = 0; i < max_parallel_sockets; i++)
+      for (i = 0; k = 0; i < max_parallel_sockets; i++) {
         if (outports[i]) {
           if (++numtries[i] > max_tries - 1) {
             if (debugging || verbose)
@@ -908,4 +908,20 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
             if (k != i)
               outports[i] = numtries[i] = 0;
             k++;
+          }
+        }
+      }
+      if (num_out == max_parallel_sockets) {
+        printf("Numout is max sockets. that is a problem!\n");
+        sleep(1) // Give some time for responses to trickle back.
+                 // and possibly to reset the hosts ICMP error limit
+      }
     }
+
+    if (debugging || verbose)
+      printf("The UDP raw ICMP scanned %d ports in %ld seconds with %d parallel sockets.\n",
+              number_of_ports, time(NULL) - starttime, max_parallel_sockets);
+    close(icmpsoc);
+    close(udpsock);
+    return *ports;
+  }
