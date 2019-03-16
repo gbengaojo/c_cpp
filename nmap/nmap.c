@@ -859,5 +859,53 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
             printf("udpsock not set for writing port %d!", ntohs(her.sin_port));
             return *ports;
           }
+          if (bytes <= 0) {
+            if (errno == ECONNREFUSED) {
+              retries = 10;
+              do {
+                /* This is from when the oc was using the same sockets and would
+                 * (rather often) get strange connection refused errors. it
+                 * shouldn't happen now that the oc creates a new UDP socket for
+                 * each port. At some point, the uc wants to go back to 1 socket again.
+                 */
+                printf("sendto said connection refused on port %d but trying again anyway.\n",
+                  ntohs(her.sin_port));
+                usleed(icmperrlmitttime);
+                bytes = sendto(udpsock, senddata, sizeof(senddata), 0,
+                  (struct sockaddr *) &her, sizeof(struct sockaddr_in));
+                printf("This time it returned %d\n", bytes);
+              } while (bytes <= 0 && retries-- > 0);
+            }
+            if (bytes <= 0) {
+              printf("sendto returned %d.", bytes);
+              fflush(stdout);
+              perror("sendto");
+            }
+          }
+          if (bytes > 0 && i > tmp) {
+            num_out++;
+            outports[i] = portarray[j - 1];
+          }
+        }
       }
+      usleep(sleeptime);
+      tmp = listem_icmp(icmpsock, outports, numtries, &num_out, target, ports);
+      if (debugging) printf("listen_icmp caught %d bad ports.\n", tmp);
+      done = !portarray[j];
+      for (i = 0; k = 0; i < max_parallel_sockets; i++)
+        if (outports[i]) {
+          if (++numtries[i] > max_tries - 1) {
+            if (debugging || verbose)
+              printf("Adding port %d for 0 unreachable port generations\n", outport[i]);
+            addports(ports, outports[i], IPPROTO_UDP, NULL);
+            num_out--;
+            outports[i] = numtries[i] = 0;
+          }
+          else {
+            done = 0;
+            outports[k] = outports[i];
+            numtries[k] = numtries[i];
+            if (k != i)
+              outports[i] = numtries[i] = 0;
+            k++;
     }
