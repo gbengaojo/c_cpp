@@ -939,4 +939,49 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    */
   int listen_icmp(int icmpsock, unsigned short outports[], unsigned short numtries[],
       int *num_out, struct in_addr target, portlist *ports) {
+
+    char response[1024];
+    struct sockaddr_in stranger;
+    int sockaddr_in_size = sizeof(struct sockaddr_in);
+    struct in_addr bs;
+    struct iphdr *ip = (struct iphdr *) response;
+    struct icmphdr *icmp = (struct icmphdr *) (response + sizeof(struct iphdr));
+    struct iphdr *ip2;
+    unsiged short *data;
+    int badport, numcaught = 0, bytes, i, tmptry = 0, found = 0;
+
+    while ((bytes = recvfrom(icmpsock, response, 1024, 0,
+           (struct sockaddr *) &stranger,
+           &sockaddr_in_size)) > 0) {
+      numcaught++;
+      bs.s_addr = ip->saddr;
+      if (ip->saddr == target.s_addr && ip->protocol == IPPROTO_ICMP
+          && icmp->type == 3 && icmp->code == 3) {
+        ip2 = (struct iphdr *) (response + 4 * ip->ihl + sizeof(stuct icmphdr));
+        data = (unsigned short *) ((char *)ip2 + 4 * ip2->ihl);
+        badport = ntohs(data[1]);
+        /* delete it from our outports array */
+        found = 0;
+        for (i = 0; i < max_parallel_sockets; i++)
+          if (outports[i] == badport) {
+            found = 1;
+            tmptry = numtries[i];
+            outports[i] = numtries[i] = 0;
+            (*num_out)--;
+            break;
+          }
+        if (debugging && found && tmptry > 0)
+          printf("Badport: %d on try number %d\n", badport, tmptry);
+        if (!found) {
+          if (debugging)
+            printf("Badport %d came in late, deleting from portlist.\n", badport);
+          if (deleteport(ports, badport, IPPROTO_UDP) < 0)
+            if (debugging) printf("Port deletion failed.\n");
+        }
+      }
+      else {
+        printf("Funked up packet!\n");
+      }
+    }
+    return numcaught;
   }
