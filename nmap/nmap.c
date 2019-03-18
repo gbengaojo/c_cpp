@@ -1122,3 +1122,20 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         number_of_ports, time(NULL) - starttime, max_parallel_sockets);
     return *ports;
   }
+
+  /**
+   * calculate_sleep - From OC: This attempts to calculate the round trip time
+   *  (rtt) to a host by timing a connect() to a port which isn't listening. A
+   *  better approach is to time a ping (since it is more likely to get through
+   *  firewalls. This is now implemented in isup() for users who are root.
+   *
+   * @param: (struct in_addr) target
+   * @return: (unsigned long)
+   */
+  unsigned long calculate_sleep(struct in_addr target) {
+    struct timeval begin, end;
+    int sd;
+    struct sockaddr_in sock;
+    int res;
+    
+  }
