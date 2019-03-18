@@ -985,3 +985,22 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     }
     return numcaught;
   }
+
+  /**
+   * lamer_udp_scan - From the OC: "This function is nonsense. I wrote it all,
+   *    really optimized, etc. Then found out that many hosts limit the rate at
+   *    which they send icmp errors :( I willl probably totally rewrite it to
+   *    be much simpler at some point. For now I won't worry about it since it
+   *    isn't a very important function (UDP is lame, plus there is already a
+   *    much better funciton for people who are r00t
+   *
+   * @param: (struct in_addr) target
+   * @param: (unsigned short *) portarray
+   * @param: (portlist *) ports
+   * @return: (portlist) 
+   */
+  portlist lamer_udp_scan(struct in_addr target, unsigned short *portarray,
+              portlist *ports) {
+
+  }
+
