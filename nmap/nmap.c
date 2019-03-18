@@ -1010,4 +1010,24 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     char data[] = "\nhelp\nquit\n";
     unsigned long sleeptime;
     unsigned int starttime;
+
+    /* Initialize our target sockaddr_in */
+    bzero((char *) &her, sizeof(struct sockaddr_in));
+    her.sin_family = AF_INET;
+    her.sin_addr = target;
+
+    if (global_delay) sleeptime = global_delay;
+    else sleeptime = calculate_sleep(target) + 60000; /* large to be on the
+                        safe side */
+
+    if (verbose || debugging)
+      printf("Initiating UDP scan against %s (%s), sleeptime: %li\n", current_time,
+        inet_ntoa(target), sleeptime);
+
+    starttime = time(NULL);
+
+    for(i = 0; i < max_parallel_sockets; i++)
+      trynum[i] = portno[i] = 0;
+
+    
   }
