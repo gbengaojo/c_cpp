@@ -1001,6 +1001,13 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    */
   portlist lamer_udp_scan(struct in_addr target, unsigned short *portarray,
               portlist *ports) {
-
+    int sockaddr_in size = sizeof(struct sockarrd_in), i=0, j=0, k=0, bytes;
+    int sockets[max_parallel_sockets], trynum[max_parallel_sockets];
+    unsigned short portno[max_parallel_sockets];
+    int last_open = 0;
+    char response[1024];
+    struct sockaddr_in her, stranger;
+    char data[] = "\nhelp\nquit\n";
+    unsigned long sleeptime;
+    unsigned int starttime;
   }
-
