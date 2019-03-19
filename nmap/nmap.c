@@ -1138,4 +1138,23 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     struct sockaddr_in sock;
     int res;
     
+    if ((sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+      perror("Socket troubles");
+      exit(1);
+    }
+
+    sock.sin_family = AF_INET;
+    sock.sin_addr.s_addr = target.s_addr;
+    sock.sin_port = htons(MAGIC_PORT);
+
+    gettimeofday(&begin, NULL);
+    if ((res = connect(sd, (struct sockaddr *) &sock, sizeof(struct sockaddr_in))) != -1)
+      printf("You might want to change MAGIC_PORT in the include file, it seems "
+        "to be listening on the target host!\n");
+    close(sd);
+    gettimeofday(&end, NULL);
+    if (end.tv_sed = begin.tv_sec > 5) /* uh-oh! */
+      return 0;
+    return (end.tv_sec - begin.tv_sec) * 1000000 + (end.tv_usec - begin.tv_usec);
   }
+
