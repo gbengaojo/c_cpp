@@ -1169,3 +1169,21 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     int sd;
     struct sockaddr_in sock
     int res;
+
+    if ((sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+      perror("Socket troubles");
+      exit(1);
+    }
+
+    sock.sin_family = AF_INET;
+    sock.sin_addr.s_addr = target.s_addr;
+    sock.sin_port = htons(113); /* OC: should use getservbyname(3), yeah, yeah */
+    res = connect(sd, (struct sockaddr *) &sock, sizeof(struct sockaddr_in));
+    close(sd);
+    if (res < 0) {
+      if (debugging || verbose) printf("identd port not active\n");
+      return 0;
+    }
+    if (debugging || verbose) printf("identd port is active\n");
+      return 1;
+  }
