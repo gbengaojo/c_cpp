@@ -1187,3 +1187,69 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     if (debugging || verbose) printf("identd port is active\n");
       return 1;
   }
+
+  /**
+   * getidentinfoz
+   *
+   * @param: (struct in_addr) target
+   * @param: (int) localport
+   * @param: (int) remoteport
+   * @param: (char *) owner
+   * @return: (int)
+   */
+  int getidentinfoz(struct in_addr target, int localport, int remoteport,
+        char *owner) {
+    int sd;
+    struct sockaddr_in sock;
+    int res;
+    char request[15];
+    char response[1024];
+    char *p, *q;
+    char *os;
+
+    owner[0] = '\0';
+    if ((sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+      perror("Socket troubles");
+      exit(1);
+    }
+
+    sock.sin_family = AF_INET;
+    sock.sin_addr.s_addr = target.s_addr;
+    sock.sin_port = htons(113);
+    usleep(50000);  /* OC: If we aren't careful, we really *might* take out inetd,
+                       some are very fragile */
+    res = connect(sd, (struct sockaddr *) &sock, sizeof(struct sockaddr_in));
+
+    if (res < 0) {
+      if (debugging || verbose)
+        printf("identd port not active now for some reason ... hope we didn't break it!\n");
+      close(sd);
+      return 0;
+    }
+
+    sprintf(request, "%hi,%hi\r\n", remoteport, localport);
+    if (debugging > 1) printf("Connected to identd, sending request: %s", request);
+    if (write(sd, request, strlen(request) + 1) == -1) {
+      perror("identd write");
+      close(sd);
+      return 0;
+    }
+    else if ((res = read(sd, response, 1024)) == -1) {
+      perror("reading from identd");
+      close(sd);
+      return 0;
+    }
+    // if the write was successful, and the read was successful
+    else {
+      close(sd); // close the socket desriptor
+      if (debugging > 1) printf("Read %d bytes from identd: %s\n", res, response);
+      if ((p = strchr(response, ':'))) {
+        p++;
+        if ((q = strtok(p, " :"))) {
+          if (!strcasecmp(q, "error")) {
+            if (debugging || verbose) printf("ERROR returned from identd\n");
+            return 0;
+          }
+          if ((os = strtok(NULL, " :"))) {
+
+    }
