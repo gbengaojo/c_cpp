@@ -1158,3 +1158,14 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     return (end.tv_sec - begin.tv_sec) * 1000000 + (end.tv_usec - begin.tv_usec);
   }
 
+  /**
+   * check_ident_port - OC: Checks whether the identd port (113) is open on the target
+   *  machine. No sense wasting time trying it for each good port if it is down!
+   *
+   * @param: (struct in_addr) target
+   * @return: (int)
+   */
+  int check_ident_port(struct in_addr target) {
+    int sd;
+    struct sockaddr_in sock
+    int res;
