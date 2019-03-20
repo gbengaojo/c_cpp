@@ -1372,4 +1372,84 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         source = &ouraddr;
       }
       else {
+        source = safe_malloc(sizeof(struct in_addr));
+        source_malloc = 1;
+        if (gethostname(myname, MAXHOSTNAMELEN) || !(myhostent = gethostbyname(myname)))
+          fatal("Your system is messed up.\n");
+        memcpy(source, myhostent->h_addr_list[0], sizeof(struct in_addr));
+      }
+      if (debugging)
+        printf("We skillfully deduced that your address is %s\n",
+                inet_ntoa(*source));
+    }
+
+    starttime = time(NULL);
+
+    do {
+      for (i = 0; i < max_parallel_sockets && portarray[j]; i++) {
+        if ((sockets[i] = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0)
+          perror("socket troubles in syn_scan");
+        else {
+          if (fragment) {
+            send_mail_fragz(sockets[i], source, &targets, MAGIC_PORT,
+                portarray[j++], TH_SYN);
+          } else {
+            send_tcp_raw(sockets[i], source, &target, MAGIC_PORT,
+                portarray[j++], 0, 0, TH_SYN, 0, 0, 0);
+          }
+          usleep(10000);
+        }
+      }
+      if ((res = select(received + 1, &fd_read, NULL, NULL, &tv)) < 0)
+        perror("select problems in syn_scan");
+      else if (res > 0) {
+        while ((bytes = recvfrom(received, packet, 65535, 0,
+                (struct sockaddr *) &from, &fromsize)) > 0) {
+          if (ip-saddr == target.s_addr) {
+            if (tcp->th_flags & TH_RST) {
+              if (debugging > 1)
+                printf("Nothing open on port %d\n", ntohs(tcp->th_sport));
+            }
+            else /* if (tcp->th_flags & TH_SYN && tcp->th_flags & TH_ACK */ {
+              if (debugging || verbose) {
+                printf("Possible catch on port %d! Here it is:\n",
+                    ntohs(tcp->th_sport));
+                readtcppacket(packet, 1);
+              }
+              addport(ports, ntohs(tcp->th_sport), IPPROTO_TCP, NULL);
+            }
+          }
+        }
+      }
+      for (i = 0; i < max_parallel_sockets && portarray[j]; i++)
+        close(sockets[i]);
+    } while (portarray[j]);
+
+    if (debugging || verbose)
+      printf("The TCP SYN scan took %ld seconds to scan %d ports.\n",
+          time(null) - starttime, number_of_ports);
+    if (source_malloc) free(source);  // OC: Gotta save those 4 bytes! ;)
+    close(received);
+    return *ports;
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
