@@ -1251,5 +1251,44 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
             return 0;
           }
           if ((os = strtok(NULL, " :"))) {
-
+            if ((p = strtok(NULL, " :"))) {
+              if ((q = strchr(p, '\r'))) *q = '\0';
+              if ((q = strchr(p, '\n'))) *q = '\0';
+              strncpy(owner, p, 512);
+              owner[512] = '\0';
+            }
+          }
+        }
+      }
     }
+    return 1;
+  }
+
+  /**
+   * isup - OC: A relatively fast (or at least short ;) ping function. Doesn't
+   *  require a separate checksum function
+   *
+   * @param: (struct in_addr) target
+   * @return: (int)
+   */
+  int isup(struct in_addr target) {
+    int res, retries = 3;
+    struct sockaddr_in sock;
+    /* type(8bit)=8, code(8)=0 (echo REQUEST), checksum(16)=34190, id(16)=31337 */
+    #ifdef __LITTLE_ENDIAN_BITFIED
+    unsigned char ping[64] = { 0x8, 0x0, 0x8e, 0x85, 0x69, 0x7A };
+    #else
+    unsigned char ping[64] = { 0x8, 0x0, 0x85, 0x8e, 0x7A, 0x69 };
+    #endif
+    int sd;
+    struct timeval tv;
+    struct timeval start, end;
+    fd_set fd_read;
+    struct {
+      struct iphdr ip;
+      unsigned char type;
+      unsigned char code;
+      unsigned short checksum;
+      char crap[16536];
+    } response;
+  }
