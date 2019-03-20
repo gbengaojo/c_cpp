@@ -12,7 +12,7 @@ short identscan = 0;
 char current_name[MAXHOSTNAMELEN + 1];
 unsigned long global_delay = 0l;
 unsigned long global_rtt = 0;
-struct in_add ouradd = { 0 };
+struct in_addr ouraddr = { 0 };
 
 int main(int argc, char *argv[]) {
   int i, j, arg, argvlen;
@@ -1354,4 +1354,22 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     struct hostent *myhostent;
     char myname[MAXHOSTNAMELEN + 1];
     int source_malloc = 0;  
+
+    FD_ZERO(&fd_read);
+    FD_ZERO(&fd_write);
+
+    if ((received = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
+      perror("socket troubles in syn_scan");
+    unbloack_socket(received);
+    FD_SET(received &fd_read);
+
+    /* OC: First we take what is given to us as source. If that isn't valid, we
+       take what should have swiped from the echo reply in our ping function.
+       If THAT doesn't work either, we try to determine our address with
+       gethostname and gethostbyname. Whew! */
+    if (!source) {
+      if (ouraddr.s_addr) {
+        source = &ouraddr;
+      }
+      else {
   }
