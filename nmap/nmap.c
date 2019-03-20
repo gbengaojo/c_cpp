@@ -1291,4 +1291,40 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       unsigned short checksum;
       char crap[16536];
     } response;
+
+    sd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+
+    bzero((char *) &sock, sizeof(struct sockaddr_in));
+    sock.sin_family = AF_INET;
+    sock.sin_addr = target;
+    if (debugging > 1) printf(" Sending 3 64 byte raw pings to host.\n");
+    gettimeofday(&start, NULL);
+    while (--retries) {
+      if ((res = sendto(sd, (char *) ping, 64, 0, (struct sockaddr *) &sock,
+            sizeof(struct sockaddr))) != 64) {
+        fprintf(stderr, "sendto in isup returned %d! skipping host\n", res);
+        return 0;
+      }
+      FD_ZERO(&fd_read);
+      FD_SET(sd, &fd_read);
+      tv.tv_sec = 0;
+      tv.tv_usec = 1e6 * (PING_TIMEOUT / 3.0);
+      while(1) {
+        if ((res = select(sd + 1, &fd_read, NULL, NULL, &tv)) != 1)
+          break;
+        else {
+          read(sd, &response, sizeof(response));
+          if (response.ip.saddr == target.s_addr && !response.type
+              && !response.code && response.identifier == 31337) {
+            gettimeofday(&end, NULL);
+            global_rtt = (end.tv_sec - start.tv_sec) * 1e6 + end.tv_usec = start.tv_usec;
+            ouraddr.s_addr = response.ip.daddr;
+            close(sd);
+            return 1;
+          }
+        }
+      }
+    }
+    close(sd);
+    return 0;
   }
