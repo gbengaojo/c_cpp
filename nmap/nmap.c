@@ -1328,3 +1328,30 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     close(sd);
     return 0;
   }
+
+  /**
+   * syn_scan
+   *
+   * @param: (struct in_addr) target
+   * @param: (unsigned short *) portarray
+   * @param: (struct in_addr *) source
+   * @param: (int) fragment
+   * @param: (portlist *) ports
+   * @result: (portlist)
+   */
+  portlist syn_scan(struct in_addr target, unsigned short *portarray,
+        struct in_addr *source, int fragment, portlist *ports) {
+    int i=0, j=0, received, bytes, starttime;
+    struct sockaddr_in from;
+    int fromsize = sizeof(struct sockaddr_in);
+    int sockets[max_parallel_sockets];
+    struct timeval tv;
+    char packet[65535];
+    struct iphdr *ip = (struct iphdr *) packet;
+    struct tcphdr *tcp = (struct tcphdr *) (packet + sizeof(struct iphdr));
+    fd_set fd_read, fd_write;
+    int res;
+    struct hostent *myhostent;
+    char myname[MAXHOSTNAMELEN + 1];
+    int source_malloc = 0;  
+  }
