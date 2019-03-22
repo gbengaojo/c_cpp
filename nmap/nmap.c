@@ -1478,6 +1478,26 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     struct hostent *myhostent;
     int source_malloced = 0;
 
+    /* OC: check that required fields are there and not too silly */
+    if (!victem || !sport || !dport || sd < 0) {
+      fprintf(stderr, "send_tcp_raw: One or more of your parameters suck!\n");
+      return -1;
+    }
+
+    /* OC: if they didn't give a source address, fill in our first address */
+    if (!source) {
+      source_malloced = 1;
+      source = safe_malloc(sizeof(struct in_addr));
+      if (gethostname(myname, MAXHOSTNAMELEN) ||
+            !(myhostent = gethostbyname(myname)))
+        fatal("Your system is messed up.\n");
+      memcpy(source, myhostent->h_addr_list[0], sizeof(struct in_addr));
+      if (debugging > 1)
+        printf("We skillfully deduced that your address is %s\n",
+            inet_ntoa(*source));
+    }
+
+    // filling out raw packet
   }
 
 
