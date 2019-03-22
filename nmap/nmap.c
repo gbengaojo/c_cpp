@@ -1449,6 +1449,36 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    * @param: (unsgined short) datalen
    * @return: (int)
    */
+  int send_tcp_raw(int sd, struct in_addr *source,
+        struct in_addr *victim, unsigned short sport,
+        unsigned short dport, unsigned long seq,
+        unsigned long ack, unsigned char flags,
+        unsigned short window, char *data,
+        unsigned short datalen)
+  {
+
+    struct pseudo_header {
+      /* OC: for computing TCP checksum, see TCP/IP Illustrated, p. 145 */
+      unsigned long s_addr;
+      unsigned long d_addr;
+      char zer0;
+      unsigned char protocol;
+      unsigned short length;
+    };
+    char packet[sizeof(struct iphdr) + sizeof(struct tcphdr) + datalen];
+    /* OC: With these placement we get data and some field alignment so we aren't
+       wasting too much in computing the checksum */
+    struct iphdr *ip = (struct iphder *) packet;
+    struct tcphdr *tcp = (struct tcphdr *) (packet + sizeof(struct iphdr));
+    struct pseudo_header *pseudo =
+      (struct pseudo_header *) (packet + sizeof(struct iphdr) - sizeof(struct pseudo_header));
+    int res;
+    struct sockaddr_in sock;
+    char myname[MAXHOSTNAMELEN + 1];
+    struct hostent *myhostent;
+    int source_malloced = 0;
+
+  }
 
 
 
