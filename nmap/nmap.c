@@ -1433,6 +1433,23 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     return *ports;
   }
 
+  /**
+   * send_tcp_raw
+   *
+   * @param: (int) sd
+   * @param: (struct in_addr *) source
+   * @param: (struct in_addr *) victim
+   * @param: (unsigned short) sport
+   * @param: (unsigned shrot) dport
+   * @param: (unsigned long) seq
+   * @param: (unsigned long) ack
+   * @param: (unsigned char *) data
+   * @param: (unsigned short) window
+   * @param: (char *) data
+   * @param: (unsgined short) datalen
+   * @return: (int)
+   */
+
 
 
 
