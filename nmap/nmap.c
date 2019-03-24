@@ -1498,6 +1498,42 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     }
 
     // filling out raw packet
+    sock.sin_family = AF_NET;
+    sock.sin_port = htons(dport);
+    sock.sin_addr.s_addr = victim->s_addr;
+
+    bzero(packet, sizeof(struct iphdr) + sizeof(struct tcphdr));
+
+    pseudo->s_addr = source->s_addr;
+    pseudo->d_addr = victim->s_addr;
+    pseudo->protocol = IPPROTO_TCP;
+    pseudo->length = htons(sizeof(struct tcphdr) + datalen);
+
+    tcp->th_sport = htons(sport);
+    tcp->th_dport = htons(dport);
+
+    if (seq)
+      tcp->th_seq = htonl(seq);
+    else
+      tcp->th_seq = rand() + rand();
+
+    if (flags & TH_ACK && aack)
+      tcp->th_ack = htonl(seq);
+    else if (flags & TH_ACK)
+      tcp->th_ack = rand() + rand();
+
+    tcp->th_off = 5 /* words */
+    tcp->th_flags = flags;
+
+    if (window)
+      tcp->th_flags = flags;
+    else tcp->th_win = htons(2048); /* OC: Who cares */ // GAO: ?
+
+    tcp->th_sum = in_cksum(unsigned short *) pseudo, sizeof(struct tcphdr) +
+                      sizeof(struct pseudo_header) + datalen);
+
+    /* OC: Now for the ip header */
+    bzero(packet, sizeof(struct iphdr));
   }
 
 
