@@ -1534,6 +1534,16 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
     /* OC: Now for the ip header */
     bzero(packet, sizeof(struct iphdr));
+    ip->version = 4;
+    ip->ihl = 5;
+    ip->tot_len = htons(sizeof(struct iphdr) + sizeof(struct tcphdr) + datalen);
+    ip->id = rand();
+    ip->ttl = 255;
+    ip->protocol = IPPROTO_TCP;
+    ip->saddr = source->s_addr;
+    ip->daddr = victim->s_addr;
+    ip->check = in_cksum((unsigned short *) ip, sizeof(struct iphdr));:w
+
   }
 
 
