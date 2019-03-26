@@ -1581,7 +1581,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     struct tcphdr *tcp = (struct tcphdr *) (packet + sizeof(struct iphdr));
     char *data = packet + sizeof(struct iphdr) + sizeof(struct tcphdr);
     int tot_len;
-    struct in_addr bullcrap, bullcrap2;
+    struct in_addr bs, bs2;
     char sourcehost[16];
 
     if (!packet) {
@@ -1589,10 +1589,44 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       return -1;
     }
 
-    bullcrap.s_addr = ip->saddr;
-    bullcrap2.s_addr = ip->daddr;
+    bs.s_addr = ip->saddr;
+    bs2.s_addr = ip->daddr;
+    strncpy(sourcehost, inet_ntoa(bs), 16);
+    i = 4 * (ntohs(ip->ihl) + ntohs(tcp->th_off));
+    if (ip->protocol == IPPROTO_TCP) {
+      if (ip->frag_off) {
+        printf("Packet is fragmented, offset field: %u", ip->frag_off);
+      } else {
+        printf("TCP packet: %s:%d -> %s:%d (total: %d bytes)\n", sourcehost,
+              ntohs(tcp->th_sport), inet_ntoa(bs2),
+              ntohs(tcp->th_dport), tot_len);
+        printf("Flags: ");
+        if (!tcp->th_flags) printf("(none)");
+        if (tcp->th_flags & TH_RST) printf("RST ");
+        if (tcp->th_flags & TH_SYN) printf("SYN ");
+        if (tcp->th_flags & TH_ACK) printf("ACK ");
+        if (tcp->th_flags & TH_PUSH) printf("PSH ");
+        if (tcp->th_flags & TH_FIN) printf("FIN ");
+        if (tcp->th_flags & TH_URG) printf("URG ");
+        printf("\n");
+        printf("ttl: %hi ", ip->ttl);
+        if (tcp->th_flags & (TH_SYN | TH_ACK))
+          printf("Seq: %lu\tAck: %lu\n", tcp->th_seq, tcp->th_ack);
+        else if (tcp->th_flags & TH_SYN)
+          printf("Seq %lu\n", ntohl(tcp->th_seq));
+        else if (tcp->th_flags & TH_ACK)
+          printf("Ack %lu\n", ntohl(tcp->th_ack));
+      }
+    }
+    if (readdata && i < tot_len) {
+      printf("Data portion:\n");
+      while (i < tot_len) {
+        printf("%2X%c", data[i], (++i % 16) ? ' ' : '\n');
+      }
+      printf("\n");
+    }
+    return 0;
   }
-
 
 
 
