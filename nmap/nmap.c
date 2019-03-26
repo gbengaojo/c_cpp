@@ -414,6 +414,7 @@ void printusage(char *name) {
 portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *ports) {
   int starttime, current_out = 0, res, deadindeax = 0, i=0, j=0, k=0, max=0;
   /*
+    ### GAO: sockaddr_in  ###
     Structure describing an Internet socket address.
     struct sockaddr_in
     {
@@ -1565,6 +1566,31 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
     if (source_malloced) free(source);
     return res;
+  }
+
+  /**
+   * readtcppacket - OC: A simple program [he] wrote to help in debugging. show
+   *    the important fields of a TCP packet
+   *
+   * @param: (char *) packet
+   * @param: (int) readdata
+   * @return: (int)
+   */
+  int readtcppacket(char *packet, int readdata) {
+    struct iphdr *ip = (struct iphdr *) packet;
+    struct tcphdr *tcp = (struct tcphdr *) (packet + sizeof(struct iphdr));
+    char *data = packet + sizeof(struct iphdr) + sizeof(struct tcphdr);
+    int tot_len;
+    struct in_addr bullcrap, bullcrap2;
+    char sourcehost[16];
+
+    if (!packet) {
+      fprintf(stderr, "readtcppacket: packet is NULL!\n");
+      return -1;
+    }
+
+    bullcrap.s_addr = ip->saddr;
+    bullcrap2.s_addr = ip->daddr;
   }
 
 
