@@ -1628,6 +1628,25 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     return 0;
   }
 
+  /**
+   * shortfry - OC: We don't actually need real crypto here...
+   *
+   * @param: (unsigned short *) ports
+   * @return: (int)
+   */
+  int shortfry(unsigned short *ports) {
+    int num;
+    unsigned short tmp;
+    int i;
+
+    for (i = 0; i < number_of_ports; i++) {
+      num = ran() % (number_of_ports);
+      tmp = ports[i];
+      ports[i] = ports[num];
+      ports[num] = tmp;
+    }
+    return 1;
+  }
 
 
 
