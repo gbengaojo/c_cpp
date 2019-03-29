@@ -1,5 +1,7 @@
 #include "nmap.h"
 
+/* Warp 9.9 ~ 4 billion mps - The 37's */
+
 /* global options */
 short debugging = DEBUGGING;
 short verbose = 0;
