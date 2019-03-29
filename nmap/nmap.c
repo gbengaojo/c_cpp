@@ -1648,6 +1648,23 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     return 1;
   }
 
+  /**
+   * send_small_fragz - OC: Much of this is swiped from the send_tcp_raw
+   *  function above which doesn't support fragmentation
+   *
+   * @param: (int) sd
+   * @param: (struct in_addr *) source
+   * @param: (struct in_addr *) victim
+   * @param: (int) sport
+   * @param: (int) dport
+   * @param: (int) flags
+   * @return: (int)
+   */
+  int send_small_fragz(int sd, struct in_addr *source, struct in_addr *victim,
+          int sport, int dport, int flags) {
+
+  }
+
 
 
 
