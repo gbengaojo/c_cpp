@@ -1665,6 +1665,14 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
   int send_small_fragz(int sd, struct in_addr *source, struct in_addr *victim,
           int sport, int dport, int flags) {
 
+    struct pseudo_header {
+      // OC: For computing TCP checksum; see TCP/IP illustrated, p. 145
+      unsigned long s_addr;
+      unsigned long d_addr;
+      char zer0;
+      unsigned char protocol;
+      unsigned short length;
+    };
   }
 
 
