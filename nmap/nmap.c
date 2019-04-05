@@ -2,6 +2,7 @@
 
 /* Warp 9.9 ~ 4 billion mps - The 37's */
 
+
 /* global options */
 short debugging = DEBUGGING;
 short verbose = 0;
@@ -1687,7 +1688,28 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     struct sockaddr_in sock;
     int id;
 
-    
+    // OC: Why do we have to fill out this thing? This is a raw packet, after all
+    sock.sin_family = AF_INET;
+    sock.sin_port = htons(dport);
+    sock.sin_addr.s_addr = victim->s_addr;
+
+    bzero(packet, sizeof(struct iphdr) + sizeof(struct tcphdr));
+
+    pseudo->s_addr = source->s_addr;
+    pseudo->d_addr = victim->s_addr;
+    pseudo->protocol = IPPROTO_TCP;
+    pseudo->length = htons(sizeof(struct tcphdr)); 
+
+    tcp->th_sport = htons(sport);
+    tcp->th_dport = htons(dport);
+    tcp->th_seq = rand() + rand();
+
+    tcp->th_off = 5; // words
+    tcp->th_flags = flags;
+
+    tcp->th_win = htons(2048);
+
+    tcp->th_sum = 1G
   }
 
 
