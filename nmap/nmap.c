@@ -1673,6 +1673,21 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       unsigned char protocol;
       unsigned short length;
     };
+
+    // OC: In this placement we get data and some field alignment so we aren't
+    // wasting too much to compute the TCP checksum
+    char packet[sizeof(struct iphdr) + sizeof(struct tcphdr) + 100];
+    struct iphdr *ip = (struct iphdr *) packet;
+    struct tcphdr *tcp = (struct tcphdr *) (packet + sizeof(struct iphdr));
+    struct pseudo_header *pseudo =
+        (struct pseudo_header *) (packet + sizeof(struct iphdr) - sizeof(struct pseudo_header));
+    char *frag2 = packet + sizeof(struct iphdr) + 16;
+    struct iphdr *ip2 = (struct iphdr *) (frag2 - sizeof(struct iphdr));
+    int res;
+    struct sockaddr_in sock;
+    int id;
+
+    
   }
 
 
