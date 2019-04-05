@@ -2,6 +2,16 @@
 
 /* Warp 9.9 ~ 4 billion mps - The 37's */
 
+/*
+host-to-network-short -
+htons - converts bytes from little endian, host byte order (least significant
+  byte first) to big endian, network byte order (greatest significat byte first)
+  E.g.: 5001d => 0x1389 
+      little-endian / host byte order
+        (in memory) --- 0x89 0x13 ---  ||- 1000 1001 -|- 0001 0011 -||
+      big-endian / network byte order
+        (in memory) --- 0x13 0x89 ---  ||- 0001 0011 -|- 1000 1001 -||
+*/
 
 /* global options */
 short debugging = DEBUGGING;
