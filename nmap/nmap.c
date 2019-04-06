@@ -1719,7 +1719,24 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
     tcp->th_win = htons(2048);
 
-    tcp->th_sum = 1G
+    tcp->th_sum = in_cksum((unsigned short *) pseudo,
+            sizeof(struct tcphdr) + sizeof(struct pseudo_header));
+
+    // Now for the ip header of frag1
+    bzero(packet, sizeof(struct iphdr));
+    ip->version = 4;
+    ip->ihl = 5;
+    /* OC: RFC 791 allows 8 octet flags, but I get "operation not permitted"
+       (EPERM) when I try that. */
+    ip->tot_len = htons(sizeof(struct iphdr) + 16);
+    id = ip->id = rand();
+    ip->frag_off = htons(MORE_FRAGMENTS);
+    ip->ttl = 255;
+    ip->protocol = IPPROTO_TCP;
+    ip->saddr = source->s_addr;
+    ip->daddr = vicitim->s_addr;
+    ip->check = in_cksum((unsigned short *) ip, sizeof(struct iphdr));
+
   }
 
 
