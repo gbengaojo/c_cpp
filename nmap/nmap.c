@@ -1737,6 +1737,24 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     ip->daddr = vicitim->s_addr;
     ip->check = in_cksum((unsigned short *) ip, sizeof(struct iphdr));
 
+    if (debugging > 1) {
+      printf("Raw TCP packet fragment #1 creation completed! Here it is:\n");
+      hdump(packet, 20);
+    }
+    if (debugging > 1) {
+      printf("\nTrying sendto(%d, packet, %d, 0, %s, %d)\n",
+              sd, ntohs(ip->tot_len), inet_ntoa(*victim),
+              sizeof(struct sockaddr_in));
+    }
+    if ((res = sendto(sd, packet, ntohs(ip->tot_len), 0,
+          (struct sockaddr *)&sock, sizeof(struct sockaddr_in))) == -1)
+    {
+      perror("sendto in send_syn_fragz");
+      return -1;
+    }
+    if (debugging > 1) {
+      printf("successfully sent %d bytes of raw_tcp!\n", res);
+    }
   }
 
 
