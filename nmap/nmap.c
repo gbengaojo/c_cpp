@@ -1792,6 +1792,18 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    */
   void hdump(unsigned char *packet, int len) {
     unsigned int i=0, j=0;
+
+    printf("Here it is:\n");
+
+    for (i = 0; i < len; i++) {
+      j = (unsigned) (packet[i]);
+      printf("%-2X ", j);
+      if (!((i + 1) % 16))
+        printf("\n");
+      else if (!((i + 1) % 4))
+        printf("  ");
+    }
+    printf("\n");
   }
 
 
