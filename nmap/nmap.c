@@ -1830,6 +1830,33 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     struct tcphdr *tcp;
     unsigned short portno[max_parallel_sockets], trynum[max_parallel, sockets];
     struct sockaddr_in stranger; 
+
+    timeout = (global_delay) ? global_delay : (global_rtt) ? (1.2 * global_rtt) + 10000 : 1e5;
+    bzero(&stranger, sockaddr_in_size);
+    bzero(portno, max_parallel_sockets * sizeof(unsigned short));
+    bzero(trynum, max_parallel_sockets * sizeof(unsigned short)) ;
+    starttime = time(NULL);
+
+    if (debugging || verbose)
+      printf("Initiating FIN stealth scan against %s (%s), sleep delay: %ld useconds\n",
+               current_name, inet_ntoa(target), timeout);
+
+    if (!source) {
+      if (ouraddr.s_addr) {
+        source = &ouraddr;
+      }
+      else {
+        source = safe_malloc(sizeof(struct in_addr));
+        source_malloc = 1;
+        if (gethostname(myname, MAXHOSTNAMELEN) || !(myhostent = gethostbyname(myname)))
+          fatal("Your system is messed up.\n");
+        memcpy(source, myostent->h_addr_list[0], sizeof(struct in_addr));
+      }
+      if (debugging || verbose) {
+        printf("We skillfully deduced that your address is %s\n",
+            inet_ntoa(*source));
+      }
+    }
   }
 
 
