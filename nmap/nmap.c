@@ -1783,6 +1783,17 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     return 1;
   }
 
+  /**
+   * hdump - Hex dump
+   *
+   * @param: (unsigned char *) packet
+   * @param: (int) len
+   * @return: (void)
+   */
+  void hdump(unsigned char *packet, int len) {
+    unsigned int i=0, j=0;
+  }
+
 
 
 
