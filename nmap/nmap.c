@@ -1806,8 +1806,31 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     printf("\n");
   }
 
-
-
+  /**
+   * fin_scan
+   *
+   * @param: (struct in_addr) target
+   * @param: (unsigned short *) portarray
+   * @param: (struct in_addr *) source
+   * @param: (int) fragment
+   * @param: (portlist *) ports
+   * @return: (int)
+   */
+  portlist fin_scan(struct in_addr target, unsigned short *portarray,
+      struct in_addr *source, int fragment, portlist *ports) {
+    int rawsd, tcpsd;
+    int done = 0, badport, starttime, someleft, i, j=0, retries = 2;
+    int source_malloc = 0;
+    int waiting_period = retries, sockaddr_in_size = sizeof(struct sockaddr_in);
+    int bytes, dupesinarow = 0;
+    unsigned long timeout;
+    struct hostent *myhostent;
+    char response[65535], myname[513]
+    struct iphdr *ip = (struct iphdr *) response;
+    struct tcphdr *tcp;
+    unsigned short portno[max_parallel_sockets], trynum[max_parallel, sockets];
+    struct sockaddr_in stranger; 
+  }
 
 
 
