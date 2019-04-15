@@ -1857,6 +1857,14 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
             inet_ntoa(*source));
       }
     }
+
+    if ((rawsd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0)
+      perror("socket troubles in fin_scan");
+
+    if ((tcpsd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
+      perror("socket troubles in fin_scan");
+
+    unblock_socket(tcpsd);
   }
 
 
