@@ -1865,6 +1865,24 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       perror("socket troubles in fin_scan");
 
     unblock_socket(tcpsd);
+
+    while (!done) {
+      for (i = 0; i < max_parallel_sockets; i++) {
+        if (!portno[i] && portarray[j]) {
+          portno[i] = portarray[j++];
+        }
+        if (portno[i]) {
+          if (frament)
+            send_small_fragz(rawsd, source, &target, MAGIC_PORT, portno[i], TH_FIN);
+          else
+            send_tcp_raw(rawsd, sourc, &target, MAGIC_PORT, portno[i], 0, 0,
+                  TH_FIN, 0, 0, 0);
+          usleep(10000); /* *WE* normally do not need this, but the target
+                lamer often does */
+        }
+      }
+
+    }
   }
 
 
