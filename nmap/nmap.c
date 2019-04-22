@@ -1888,15 +1888,44 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       while ((bytes = recvfrom(tcpsd, response, 65535, 0, (struct sockaddr *)
              &stanger, &sockaddr_in_size)) > 0) {
         if (ip->saddr == target.s_addr) {
+          tcp = (struct tcphdr *) (response + 4 * ip->ihl);
+          if (tcp->th_flags & TH_RST) {
+            badport = ntohs(tcp->th_sport);
+            if (debugging > 1) printf("Nothing open on port %d\n", badport);
+            /* delete the port from active scanning */
+            for (i = 0; i < max_parallel_sockets; i++) {
+              if (portno[i] == badport) {
+                if (debugging && trynum[i] > 0) {
+                  printf("Bad port %d caught on fin scan, try number %d\n",
+                      badport, trynum[i] + 1);
+                }
+                trynum[i] = 0;
+                portno[i] = 0;
+                break;
+              }
+            }
+            if (i == max_parallel_sockets) {
+              if (debugging) {
+                printf("Late packet or dupe, deleting port %d.\n", badport);
+              }
+              dupesinarow++;
+              if (ports) deleteports(ports, badport, IPPROTO_TCP);
+            }
+          } else {
 
-          /* ... */
-          if (debugging > 1) {
-            printf("Strange packet from target!%d! Here it is:\n",
-                ntohs(tcp->th_sport));
-            if (bytes >= 40) readtcppacket(response, 1);
-            else hdump(response, bytes);
+            /* ... */
+            if (debugging > 1) {
+              printf("Strange packet from target!%d! Here it is:\n",
+                  ntohs(tcp->th_sport));
+              if (bytes >= 40) readtcppacket(response, 1);
+              else hdump(response, bytes);
+            }
           }
         }
+
+
+
+
       }
     }
   }
