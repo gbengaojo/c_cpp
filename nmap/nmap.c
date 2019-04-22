@@ -1887,7 +1887,16 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
 
       while ((bytes = recvfrom(tcpsd, response, 65535, 0, (struct sockaddr *)
              &stanger, &sockaddr_in_size)) > 0) {
+        if (ip->saddr == target.s_addr) {
 
+          /* ... */
+          if (debugging > 1) {
+            printf("Strange packet from target!%d! Here it is:\n",
+                ntohs(tcp->th_sport));
+            if (bytes >= 40) readtcppacket(response, 1);
+            else hdump(response, bytes);
+          }
+        }
       }
     }
   }
