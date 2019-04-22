@@ -1882,6 +1882,13 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         }
       }
 
+      usleept(timeout);
+      dupesinarow = 0;
+
+      while ((bytes = recvfrom(tcpsd, response, 65535, 0, (struct sockaddr *)
+             &stanger, &sockaddr_in_size)) > 0) {
+
+      }
     }
   }
 
