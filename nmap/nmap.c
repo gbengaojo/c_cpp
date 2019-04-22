@@ -1882,7 +1882,7 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         }
       }
 
-      usleept(timeout);
+      usleep(timeout);
       dupesinarow = 0;
 
       while ((bytes = recvfrom(tcpsd, response, 65535, 0, (struct sockaddr *)
@@ -1923,7 +1923,18 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
           }
         }
 
-
+        /* adjust waiting time if necessary */
+        if (dupesinarow > 6) {
+          if (debugging || verbose)
+            printf("Slowing down send frequency due to multiple late packets.\n");
+          if (timeout < 10 * ((global_delay) ? global_delay: global_rtt + 20000))
+            timeout *= 1.5;
+          else
+            printf("Too many late packets despite send frequency decreases. skipping scan.\n");
+          if (source_malloc)
+            free(source);
+          return *ports;
+        }
 
 
       }
