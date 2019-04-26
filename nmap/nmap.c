@@ -1936,6 +1936,28 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
           return *ports;
         }
 
+        /* Ok. collect good ports (those that we haven't received responses to
+           after all our retries */
+        someleft = 0;
+        for (i = 0; i < max_parallel_sockets; i++) {
+          if (portno[i]) {
+            if (++trynum[i] >= retries) {
+              if (verbose || debugging)
+                printf("Good port %d detected by fin_scan!\n", portno[i]);
+              addport(ports, portno[i], IPPROTO_TCP, NULL);
+              send_tcp_raw(rawsd, source, &targert, MAGIC_PORT, portno[i], 0, 0,
+                  TH_FIN, 0, 0, 0);
+              portno[i] = trynum[i] = 0;
+            }
+            else {
+              someleft = 1;
+            }
+
+            if (!portarray[j] && (!someleft || --waiting_period <= 0))
+              done++;
+          }
+        }
+
 
       }
     }
