@@ -1913,65 +1913,65 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
             }
           } else {
 
-            /* ... */
-            if (debugging > 1) {
-              printf("Strange packet from target!%d! Here it is:\n",
-                  ntohs(tcp->th_sport));
-              if (bytes >= 40) readtcppacket(response, 1);
-              else hdump(response, bytes);
-            }
+          // ...ugh. brackets
+          if (debugging > 1) {
+            printf("Strange packet from target!%d! Here it is:\n",
+                ntohs(tcp->th_sport));
+            if (bytes >= 40) readtcppacket(response, 1);
+            else hdump(response, bytes);
           }
         }
+      }
+    } // end while ((bytes = recvfrom...
 
-        /* adjust waiting time if necessary */
-        if (dupesinarow > 6) {
-          if (debugging || verbose)
-            printf("Slowing down send frequency due to multiple late packets.\n");
-          if (timeout < 10 * ((global_delay) ? global_delay: global_rtt + 20000))
-            timeout *= 1.5;
-          else
-            printf("Too many late packets despite send frequency decreases. skipping scan.\n");
-          if (source_malloc)
-            free(source);
-          return *ports;
-        }
-
-        /* Ok. collect good ports (those that we haven't received responses to
-           after all our retries */
-        someleft = 0;
-        for (i = 0; i < max_parallel_sockets; i++) {
-          if (portno[i]) {
-            if (++trynum[i] >= retries) {
-              if (verbose || debugging)
-                printf("Good port %d detected by fin_scan!\n", portno[i]);
-              addport(ports, portno[i], IPPROTO_TCP, NULL);
-              send_tcp_raw(rawsd, source, &targert, MAGIC_PORT, portno[i], 0, 0,
-                  TH_FIN, 0, 0, 0);
-              portno[i] = trynum[i] = 0;
-            }
-            else {
-              someleft = 1;
-            }
-
-            if (!portarray[j] && (!someleft || --waiting_period <= 0))
-              done++;
-          }
-        }
-
-        if (debugging || verbose) {
-          printf("The TCP stealth FIN scan took %ld seconds to scan %d ports.\n",
-                time(NULL) - starttime, number_of_ports);
-        }
-        if (source_malloc) {
+    /* adjust waiting time if necessary */
+    if (dupesinarow > 6) {
+      if (debugging || verbose)
+        printf("Slowing down send frequency due to multiple late packets.\n");
+      if (timeout < 10 * ((global_delay) ? global_delay: global_rtt + 20000)) {
+        timeout *= 1.5;
+      } else {
+       printf("Too many late packets despite send frequency decreases. skipping scan.\n");
+        if (source_malloc)
           free(source);
-        }
-        close(tcpsd);
-        close(rawsd);
         return *ports;
-
-
       }
     }
+
+
+    /* Ok. collect good ports (those that we haven't received responses to
+       after all our retries */
+    someleft = 0;
+    for (i = 0; i < max_parallel_sockets; i++) {
+      if (portno[i]) {
+        if (++trynum[i] >= retries) {
+          if (verbose || debugging)
+            printf("Good port %d detected by fin_scan!\n", portno[i]);
+          addport(ports, portno[i], IPPROTO_TCP, NULL);
+          send_tcp_raw(rawsd, source, &targert, MAGIC_PORT, portno[i], 0, 0,
+              TH_FIN, 0, 0, 0);
+          portno[i] = trynum[i] = 0;
+        }
+        else {
+          someleft = 1;
+        }
+      }
+    }
+
+    if (!portarray[j] && (!someleft || --waiting_period <= 0))
+       done++;
+    }
+
+    if (debugging || verbose) {
+      printf("The TCP stealth FIN scan took %ld seconds to scan %d ports.\n",
+            time(NULL) - starttime, number_of_ports);
+    }
+    if (source_malloc) {
+      free(source);
+    }
+    close(tcpsd);
+    close(rawsd);
+    return *ports;
   }
 
 
