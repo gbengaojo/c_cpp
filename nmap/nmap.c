@@ -1958,6 +1958,17 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
           }
         }
 
+        if (debugging || verbose) {
+          printf("The TCP stealth FIN scan took %ld seconds to scan %d ports.\n",
+                time(NULL) - starttime, number_of_ports);
+        }
+        if (source_malloc) {
+          free(source);
+        }
+        close(tcpsd);
+        close(rawsd);
+        return *ports;
+
 
       }
     }
