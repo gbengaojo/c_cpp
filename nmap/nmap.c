@@ -1981,7 +1981,11 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
    * @return: (int)
    */
   int ftp_anon_connect(struct ftpinfo *ftp) {
-
+    int sd;
+    struct sockaddr_in sock;
+    int res;
+    char recvbuf[2048];
+    char command[512];
   }
 
 
