@@ -1974,6 +1974,16 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     return *ports;
   }
 
+  /**
+   * ftp_anon_connect
+   *
+   * @param: (struct ftpinfo *) ftp
+   * @return: (int)
+   */
+  int ftp_anon_connect(struct ftpinfo *ftp) {
+
+  }
+
 
 
 
