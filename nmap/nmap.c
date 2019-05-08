@@ -1986,6 +1986,17 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     int res;
     char recvbuf[2048];
     char command[512];
+
+    if (verbose || debuggin) {
+      printf("Attempting connection to ftp://%s:%s@%s:%i\n", ftp->user, ftp->pass,
+          ftp->server_name, ftp->port);
+    }
+    if ((sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+      perror("Couldn't create ftp_anon_connect socket");
+      return 0;
+    }
+    
+    
   }
 
 
