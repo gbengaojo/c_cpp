@@ -1995,8 +1995,15 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       perror("Couldn't create ftp_anon_connect socket");
       return 0;
     }
-    
-    
+
+    sock.sin_family = AF_INET;
+    sock.sin_addr.s_addr = ftp->server.s_addr;
+    sock.sin_port = htons(ftp->port);
+    res = connect(sd, (struct sockaddr *) &sock, sizeof(struct sockaddr_in));
+    if (res < 0) {
+      printf("Your ftp bounce proxy server won't talk to us!\n");
+      exit(1);
+    }
   }
 
 
