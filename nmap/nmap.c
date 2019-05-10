@@ -2004,6 +2004,17 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
       printf("Your ftp bounce proxy server won't talk to us!\n");
       exit(1);
     }
+    if (verbose || debugging) printf("Connected:");
+    while ((res = recvtime(sd, recvbuf, 2048, 7)) > 0) {
+      if (debugging || verbose) {
+        recvbuf[res] = '\0';
+        printf("%s", recvbuf);
+      }
+      if (res < 0) {
+        perror("recv problem from ftp bounce server");
+        exit(1);
+      }
+    }
   }
 
 
