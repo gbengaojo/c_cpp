@@ -2014,6 +2014,11 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
         perror("recv problem from ftp bounce server");
         exit(1);
       }
+
+      // attempt ftp command send
+      snprintf(command, 511, "USER %s\r\n", ftp->user);
+      send(sd, command, strlen(command), 0);
+      res = recvtime(sd, recvbuf, 2048, 12);
     }
   }
 
