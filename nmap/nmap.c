@@ -2023,6 +2023,29 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     }
   }
 
+  int recvtime(int sd, char *buf, int len, int seconds) {
+    int res;
+    struct timeval timeout = {seconds, 0};
+    fd_set readfd;
+
+    FD_ZERO(&readfd);
+    FD_SET(sd, &readfd);
+
+    res = select(sd + 1, &readfd, NULL, NULL, &timeout);
+    if (res > 0) {
+      res = recv(sd, buf, len, 0);
+      if (res >= 0)
+        return res;
+      perror("recv in recvtime");
+      return 0;
+    }
+    else if (!res)
+      return 0;
+    perror("select() in recvtime");
+    return -1
+  }
+  } 
+
 
 
 
