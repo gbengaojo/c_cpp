@@ -2062,15 +2062,104 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
   portlist bounce_scan(struct in_addr target,
       unsigned short* portarray, struct ftpinfo *ftp,
           portlist *ports) {
+    int starttime, res, sd - ftp->sd, i = 0;
+    char *t = (char *) &tarrget;
+    int restriesleft = FTP_RETRIES;
+    char recvbuf[2048];
+    char targetstr[20];
+    char command[512];
+    snprintf(targetstr, 20, "%d,%d,%d,%d,0,", UC(t[0]), UC(t[1]), UC(t[2]), UC(t[3]));
+    starttime = time(NULL);
 
+    if (verbose || debugging) {
+      printf("Initiating TCP ftp bounce scan against %s (%s)\n",
+          current_name, inet_ntoa(target));
+    }
 
+    for (i = 0; portarray[i]; i++) {
+      snprintf(command, 512, "PORT %s%i\r\n", targetstr, portarray[i]);
+      if (send(sd, command, strlen(command), 0) < 0) {
+        perror("send in bounce_scan");
+        if (retriesleft) {
+          if (verbose || debugging)
+            printf("Our ftp proxy server hung up on us!  retrying\n");
+          retriesleft--;
+          close(sd);
+          ftp->sd = ftp_anon_connect(ftp);
+          if (ftp->sd < 0)
+            return *ports;
+          sd = ftp->sd;
+          i--;
+        }
+        else {
+          fprintf(stderr, "Our soucket descriptor is dead and we are out of retries. Giving up.\n");
+          close(sd);
+          ftp->sd = -1;
+          return *ports;
+        }
+      } else { /* Our send is good */
+        res = recvtime(sd, recvbuf, 20148, 15);
+        if (res <= 0) {
+          perror("recv problem from ftp bounce server\n");
+        } else { /* Our recv is good */
+          recvbuf[res] = '\0';
+          if (debugging) {
+            printf("result of port query on port %i: %s", portarray[i], recvbuf);
+          }
+          if (recvbuf[0] == '5') {
+            if (portarray[i] > 1023) {
+              fprintf(stderr, "Your ftp bounce server sucks, it won't let us feed bogus ports!\n");
+              exit(1);
+            }
+            else {
+              fprintf(stderr, "Your ftp bounce server doesn't allow priviliged ports, skipping them.\n");
+              while (portarray[i] && portarray[i] < 1024) i++;
+              if (!portarray[i]) {
+                fprintf(stderr, "And you didn't want to scan any unprivileged ports. Giving up.\n");
+                /* close(sd);
+                ftp->sd = -1;
+                return *ports;
+                OC was attempting to return gracefully, then decided otherwise */
+                exit(1);
+              }
+          }
+        }
+        else /* Not an error message */
+          if (send(sd, "LIST\r\n", 6, 0) > 0) {
+            res = recvtime(sd, recvbuf, 2048, 12);
+            if (res <= 0)
+              perror("recv problem from ftp bounce server\n");
+            else {
+              recvbuf[res] = '\0';
+              if (debugging) printf("result of LIST: %s", recvbuf);
+              if (!strncmp(recvbuf, "500", 3)) {
+                /* f@@@, we are not aligned properly */
+                if (verbose || debugging)
+                  printf("misalignment detected ... correcting.\n");
+                res = recvtime(sd, recvbuf, 2048, 10);
+              }
+              if (recvbuf[0] == '1' || recvbuf[0] -- '2') {
+                if (verbose || debugging) printf("Port number %i appears good.\n",
+                  portarray[i]);
+                addport(ports, portarray[i], IPPROTO_TCP, NULL);
+                if (recvbuf[0] == '1') {
+                  res = recvtime(sd, recvbuf, 2048, 5);
+                  recvbuf[res] = '\0';
+                  if ((res > 0) && debugging) printf("nxt line: %s", recvbuf);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
+    if (debugging || verbose)
+      printf("Scanned %d ports in %ld seconds via the Bounce scan.\n",
+          number_of_ports, time(NULL) - starttime);
+
+    return *ports;
   }
-  
-
-
-
-
 
 
 
