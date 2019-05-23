@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
       int h_addrtype; // host address type
       int h_length; // length of address
       char **h_addr_list; // list of addresses from name server
+    }
   */
   struct hostent *target_net, *p;
   unsigend long int lastip, currentip, longtmp;
@@ -173,6 +174,7 @@ int main(int argc, char *argv[]) {
 
   while (optind < argc) {
 
+    }
     /* Time to parse the allowed mask */
     target = NULL;
     target_net = strtok(strdup(fakeargv[optind]), "/");
@@ -255,9 +257,9 @@ int main(int argc, char *argv[]) {
     }
     optind++;
   }
-}
 
 return 0;
+}
 
 __inline__ int unblock_socket(int sd) {
   int options;
@@ -2023,6 +2025,15 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     }
   }
 
+  /**
+   * recvtime
+   *
+   * @param: (int) sd
+   * @param: (char *) buf
+   * @param: (int) len
+   * @param: (int) seconds
+   * @return: (int)
+   */
   int recvtime(int sd, char *buf, int len, int seconds) {
     int res;
     struct timeval timeout = {seconds, 0};
@@ -2044,13 +2055,19 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     perror("select() in recvtime");
     return -1
   }
-  } 
+
+
+  /**
+   * bouncescan
+   */
+  portlist bounce_scan(struct in_addr target,
+      unsigned short* portarray, struct ftpinfo *ftp,
+          portlist *ports) {
 
 
 
-
-
-
+  }
+  
 
 
 
