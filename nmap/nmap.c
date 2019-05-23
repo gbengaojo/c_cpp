@@ -2161,6 +2161,49 @@ portlist tcp_scan(struct in_addr target, unsigned short *portarray, portlist *po
     return *ports;
   }
 
+  /**
+   * parse_bounce - parse a URL stype ftp string of the form
+   *   user:pass@server:portno
+   *
+   */
+  int parse_bounce(struct ftpinfo *ftp, char *url) {
+    char *p = url, *q, *s;
+
+    if ((q = strrchr(url, '@'))) { /*we have username and/or pass*/
+      *(q++) = '\0';
+      if ((s = strchr(q, ':')))
+      { /* has portno */
+        *(s++) = '\0';
+        strncpy(ftp->server_name, q, MAXHOSTNAMELEN);
+        ftp->port = atoi(s);
+      }
+    else strncpy(ftp->server_name, q, MAXHOSTNAMELEN);
+
+    if ((s = strchr(p, ':'))) { /* User AND pass given */
+      *(s++) = '\0';
+      strncpy(ftp->user, p, 63);
+      strncpy(ftp->pass, s, 255);
+    }
+    else { /* Username ONLY given */
+      printf("Assuming %s is a username, and using the default password: %s\n",
+          p, ftp->pass);
+      strncpy(ftp->user, p, 63);
+    }
+  }
+  else /* no username or password given */
+    if ((s = strchr(url, ':'))) { /* portno is given */
+      *(s++) = '\0';
+      strncpy(ftp->server_name, ul, MAXHOSTNAMELEN);
+      ftp->port = atoi(s);
+    }
+    else /* default case, no username, pwd, or port # */
+      strncpy(ftp->server_name, url, MAXHOSTNAMELEN);
+
+    ftp->user[63] = ftp->pass[255] = ftp->server_name[MAXHOSTNAMELEN] = 0;
+
+    return 1;
+  }
+
 
 
 
