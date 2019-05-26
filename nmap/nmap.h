@@ -17,8 +17,8 @@
 #include <fcntl.h>
 #include <signal.h> 
 #include <signal.h>
-#include /* <linux/ip.h> */ <netinet/ip.h>
-#include /* <linux/icmp.h> */ <netinet/ip_icmp.h>
+#include <linux/ip.h> // <netinet/ip.h>
+#include <linux/icmp.h> // <netinet/ip_icmp.h>
 #include <arpa/inet.h>
 #include <math.h>
 #include <time.h>
