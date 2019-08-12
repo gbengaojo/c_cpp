@@ -32,3 +32,41 @@ main (int argc, char **argv)
 #ifndef NO_TRUST_MODELS
   const char *trustdb_name = NULL;
 #endif /*!NO_TRUST_MODELS*/
+  char *def_cipher_string = NULL;
+  char *def_aead_string = NULL;
+  char *def_digest_string = NULL;
+  char *compress_algo_string = NULL;
+  char *cert_digest_string = NULL;
+  char *s2k_cipher_string = NULL;
+  char *s2k_digest_string = NULL;
+  char *pers_aead_list = NULL;
+  char *pers_digest_list = NULL;
+  char *pers_compress_list = NULL;
+  int eyes_only=0;
+  int multifile=0;
+  int pwfd = -1;
+  int ovrseskeyfd = -1;
+  int fpr_maybe_cmd = 0; /* --fingerprint maybe a command. */
+  int any_explicit_recipient = 0;
+  int default_akl = 1;
+  int require_secmem = 0;
+  int got_secmem = 0;
+  struct assuan_malloc_hooks malloc_hooks;
+  ctrl_t ctrl;
+
+  static int print_dane_records;
+  static int print_pka_records;
+  static int allow_large_chunks;
+
+#ifdef __riscos__
+  opt.lock_once = 1;
+#endif /* __riscos__ */
+
+  /* Please note that we may be running SUID(root), so be very CAREFUL
+     when adding any stuff between here and the call to
+     secmem_init() somewhere after the option parsing. */
+  early_system_init ();
+  gnupg_reopen_std (GPG_NAME);
+  trap_unaligned ();
+  gnupg_rl_initialize ();
+  set_strusage (my_strusage);
