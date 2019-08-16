@@ -70,3 +70,31 @@ main (int argc, char **argv)
   trap_unaligned ();
   gnupg_rl_initialize ();
   set_strusage (my_strusage);
+  gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
+  log_set_prefix (GPG_NAME, GPGRT_LOG_WITH_PREFIX);
+
+  /* Makesure that our subsystems are readay. */
+  i18n_init();
+  init_common_subsystems (&argc, &argv);
+
+  /*Use our own logging handler for Libgcrypt. */
+  setup_libgcrypt_logging ();
+
+  /* Put random number into secure memory */
+  gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
+
+  may_coredump = disable_core_dumps();
+
+  gnupg_init_signals (0, emergency_cleanup);
+
+  dotlock_create (NULL, 0); /* Register lock file cleanup. */
+
+  /* Tell the compliance module who we are. */
+  gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
+
+  opt.autostart = 1;
+  opt.session_env = session_env_new ();
+  if (!opt.session_env)
+    log_fatal ("error allocating session environment block: %s\n",
+               strerror (errno));
+
