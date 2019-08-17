@@ -98,3 +98,4 @@ main (int argc, char **argv)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
 
+  
