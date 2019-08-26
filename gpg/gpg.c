@@ -98,4 +98,38 @@ main (int argc, char **argv)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
 
-  
+  opt.command_fd = -1;  /* no command */
+  opt.compress_level = -1;  /* defaults to standard compress level */
+  opt.bz2_compress_level = -1; /* defaults to standard compress level */
+  /* note; if you change these lines, look at oOpenPGP */
+  opt.def_cipher_algo = 0;
+  opt.def_aead_algo = 0;
+  opt.def_digest_algo = 0;
+  opt.cert_digest_algo = 0;
+  opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
+  opt.s2k_mode = 3; /* iterated+salted */
+  opt.s2k_cipher_algo = DEFAULT_CIPHER_ALGO;
+  opt.completes_needed = 1;
+  opt.marginals_needed = 3;
+  opt.max_cert_depth = 5;
+  opt.escape_from = 1;
+  opt.flags.require_cross_cert = 1;
+  opt.import_options = IMPORT_REPAIR_KEYS;
+  opt.export_options = EXPORT_ATTRIBUTES;
+  opt.keyserver_options.import_options = (IMPORT_REPAIR_KEYS
+            | IMPORT_REPAIR_PKS_SUBKEY_BUG
+                                          | IMPORT_SELF_SIGS_ONLY
+                                          | IMPORT_CLEAN);
+  opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
+  opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
+  opt.verify_options = (LIST_SHOW_UID_VALIDITY
+                        | VERIFY_SHOW_POLICY_URLS
+                        | VERIFY_SHOW_STD_NOTATIONS
+                        | VERIFY_SHOW_KEYSERVER_URLS);
+  opt.list_options   = (LIST_SHOW_UID_VALIDITY
+                        | LIST_SHOW_USAGE);
+#ifdef NO_TRUST_MODELS
+  opt.trust_model = TM_ALWAYS;
+#else
+  opt.trust_model = TM_AUTO;
+#endif
