@@ -133,3 +133,4 @@ main (int argc, char **argv)
 #else
   opt.trust_model = TM_AUTO;
 #endif
+  opt.tofu_default_policy = TOFU_POLICY_AUTO;
