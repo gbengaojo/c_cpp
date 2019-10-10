@@ -146,3 +146,36 @@ main (int argc, char **argv)
   opt.weak_digests = NULL;
   opt.compliance = CO_GNUPG;
   opt.flags.rfc4880bis = 1;
+
+  /* Check whether we have a config file on the command line. */
+  orig_argc = argc;
+  orig_argv = argv;
+  pargs.argc = &argc;
+  pargs.argv = &argv;
+  pargs.flags = (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
+  while (arg_parse(&pargs, opts)) {
+    if (pargs.r_opt == oDebug || pargs.r_opt == oDebugAll)
+      parse_debug++;
+    else if (pargs.r_opt == oDebugIOLBF)
+      es_setvbuf(es_stdout, NULL, _IOLBF, 0);
+    else if (pargs.r_opt == oOptions) {
+      /* yes there is one, so we do not try the default one, but
+       * read the option file when it is encountered at the commandline
+       */
+      default_config = 0;
+    }
+    else if (pargs.r_opt == oNoOptions) {
+      default_config = 0; /* --no-options */
+      opt.no_homedir_creation = 1;
+    }
+    else if (pargs.r_opt == oHomedir)
+      gnupg_set_homedir(pargs.r.ret_str);
+    else if (pargs.r_opt == oNoPermissionWarn)
+      opt.no_homedir_creation = 1;
+    else if (pargs.r_opt == oStrict) {
+      /* Not used */
+    }
+    else if (pargs.r_opt == oNoStrict) {
+      /* Not used */
+    }
+  }
