@@ -196,5 +196,16 @@ main (int argc, char **argv)
   }
 #endif
 
+  /* Initialize the secure memory */
+  if (!gcry_control (GCRYCTL_INIT_SECMEM, SECMEM_BUFFER_SIZE, 0))
+    got_secmem = 1;
+#if defined(HAVE_GETUID) && defined(HAVE_GETEUID)
+  /* Thereshould be no way to get to this spot while still carrying
+     setuid privs. Just in case, bomb out if we are. */
+  if (getuid() != geteuid())
+    BUG();
+#endif
+  maybe_setuid = 0;
+
 
 
