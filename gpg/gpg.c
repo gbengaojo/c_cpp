@@ -207,5 +207,11 @@ main (int argc, char **argv)
 #endif
   maybe_setuid = 0;
 
+  /* Okay, we are now working under our real uid */
 
-
+  /* malloc hooks go here ... */
+  malloc_hooks.malloc = gcry_malloc;
+  malloc_hooks.realloc = gcry_realloc;
+  assuan_set_malloc_hooks(&malloc_hooks);
+  assuan_set_gpg_err_source(GPG_ERR_SOURCE_DEFAULT);
+  setup_libassuan_logging(&opt.debug, NULL);
