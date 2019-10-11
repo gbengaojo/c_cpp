@@ -179,3 +179,22 @@ main (int argc, char **argv)
       /* Not used */
     }
   }
+
+#ifdef HAVE_DOSISH_SYSTEM
+  if (strchr(gnupg_homedir(), '\\')) {
+    char *d, *buf = xmalloc(strlen(gnupg_homedir()) + 1)
+    const char *s;
+    for (d = buf, s = gnupg_homedir(); *s; s++) {
+      *d++ = *s == '\\' ? '/' : *s;
+#ifdef HAVE_W32_SYSTEM
+      if (s[1] && IsDBCSLeadByte (*s))
+        *d++ = *++s;
+#endif
+    }
+    *d = 0;
+    gnupg_set_homedir(buf);
+  }
+#endif
+
+
+
