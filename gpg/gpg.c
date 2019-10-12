@@ -215,3 +215,28 @@ main (int argc, char **argv)
   assuan_set_malloc_hooks(&malloc_hooks);
   assuan_set_gpg_err_source(GPG_ERR_SOURCE_DEFAULT);
   setup_libassuan_logging(&opt.debug, NULL);
+
+  /* Set default options which require that malloc stuff is ready. */
+  additional_weak_digest("MD5");
+  parse_auto_key_locate("local.wkd");
+
+  /* Try for a version specific config file first */
+  default_configname = get_default_configname();
+  if (default_config)
+    configname = xstrdup(default_configname);
+
+  argc = orig_argc;
+  argv = orig_argv;
+  pargs.argc = &argc;
+  pargs.argv = &argv;
+  pargs.flags = ARGPARSE_FLAG_KEEP;
+
+  /* By this point we have a homedir, and cannot change it. */
+  check_permissions(gnupg_homedir(), 0);
+
+  
+
+
+
+
+
