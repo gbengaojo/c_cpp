@@ -234,6 +234,17 @@ main (int argc, char **argv)
   /* By this point we have a homedir, and cannot change it. */
   check_permissions(gnupg_homedir(), 0);
 
+  next_pass:
+    if (configname) {
+      if (check_permissions(configname, 1)) {
+        /* If any options file is unsafe, then disable any external
+           programs for keyserver calls or photo IDs. Since the
+           external program to call is set in the options file, an
+           unsafe options file can lead to an arbitrary program
+           being run. */
+        opt.exec_disable = 1;
+      }
+          
   
 
 
