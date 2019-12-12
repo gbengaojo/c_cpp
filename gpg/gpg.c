@@ -244,7 +244,30 @@ main (int argc, char **argv)
            being run. */
         opt.exec_disable = 1;
       }
-          
+
+      configlineno = 0;
+      configfp = fopen( configname, "r");
+            if (configfp && is_secured_file (fileno(configfp)))
+            {
+              fclose(configfp);
+              configfp = null;
+              gpg_err_set_errno(EPERM);
+            {
+      if (!configfp) {
+        if (default_config) {
+          if (parse_debug)
+            log_info(_("Note: no default option file '%s'\n"),
+                        configname);
+        }
+        else {
+          log_error(_("option file '%s': %s\n"),
+                configname, stterror(errno) );
+          g10_exit(2);
+        }
+        xfree(configname); configname = NULL;
+      }
+
+
   
 
 
