@@ -252,7 +252,7 @@ main (int argc, char **argv)
               fclose(configfp);
               configfp = null;
               gpg_err_set_errno(EPERM);
-            {
+            }
       if (!configfp) {
         if (default_config) {
           if (parse_debug)
@@ -266,11 +266,21 @@ main (int argc, char **argv)
         }
         xfree(configname); configname = NULL;
       }
+      if (parse_debug && configname)
+        log_info(_("reading options from '%s'\n"), configname);
+      default_config = 0;
+    }
 
-
-  
-
-
-
-
+    while (optfile_parse(configfp, configname, &configlineno, &pargs, opts))
+    {
+      switch(pargs.r_opt)
+      {
+        case aListConfig:
+        case aListGcryptConfig:
+        case aGPGConfigList:
+        case aGPGConfTest:
+          set_cmd(&cmd, pargs.r_opt);
+          /* Do not register a keyring for these commands. */
+          default_keyring = -1;
+          break;
 
