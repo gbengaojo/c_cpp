@@ -284,3 +284,65 @@ main (int argc, char **argv)
           default_keyring = -1;
           break;
 
+        case aCheckKeys:
+        case aListPackets:
+        case aImport:
+        case aFastImport:
+        case aSendKeys:
+        case aRecvKeys:
+        case aSearchKeys:
+        case aRefreshKeys:
+        case aFetchKeys:
+        case aExport:
+#ifdef ENABLE_CARD_SUPPORT
+              case aCardStatus:
+              case aCardEdit:
+              case aChangePIN:
+#endif /* ENABLE_CARD_SUPPORT*/
+        case aListKeys:
+        case aLocateKeys:
+        case aLocateExtKeys:
+        case aListSigs:
+        case aExportSecret:
+        case aExportSecretSub:
+        case aExportSshKey:
+        case aSym:
+        case aClearsign:
+        case aGenRevoke:
+        case aDesigRevoke:
+        case aPrimegen:
+        case aGenRandom:
+        case aPrintMD:
+        case aPrintMDs:
+        case aListTrustDB:
+        case aCheckTrustDB:
+        case aUpdateTrustDB:
+        case aFixTrustDB:
+        case aListTrustPath:
+        case aDeArmor:
+        case aEnArmor:
+        case aSign:
+        case aQuickSignKey:
+        case aQuickLSignKey:
+        case aSignKey:
+        case aLSignKey:
+        case aStore:
+        case aQuickKeygen:
+        case aQuickAddUid:
+        case aQuickAddKey:
+        case aQuickRevUid:
+        case aQuickSetExpire:
+        case aQuickSetPrimaryUid:
+        case aExportOwnerTrust:
+        case aImportOwnerTrust:
+        case aRebuildKeydbCaches:
+            set_cmd (&cmd, pargs.r_opt);
+        break;
+
+
+  
+
+
+
+
+
