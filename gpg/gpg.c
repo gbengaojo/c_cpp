@@ -350,7 +350,7 @@ main (int argc, char **argv)
             greeting=1;
         break;
 
-	      case aShowKeys:
+        case aShowKeys:
             /* opts is defined as `static ARGPARSE_OPTS opts[] = { ... } above */
             set_cmd (&cmd, pargs.r_opt);
             opt.import_options |= IMPORT_SHOW;
