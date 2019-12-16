@@ -339,6 +339,18 @@ main (int argc, char **argv)
             set_cmd (&cmd, pargs.r_opt);
         break;
 
+        case aKeygen:
+        case aFullKeygen:
+        case aEditKey:
+        case aDeleteSecretKeys:
+        case aDeleteSecretAndPublicKeys:
+        case aDeleteKeys:
+        case aPasswd:
+            set_cmd (&cmd, pargs.r_opt);
+            greeting=1;
+        break;
+
+
 
   
 
