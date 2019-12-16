@@ -350,6 +350,19 @@ main (int argc, char **argv)
             greeting=1;
         break;
 
+	      case aShowKeys:
+            /* opts is defined as `static ARGPARSE_OPTS opts[] = { ... } above */
+            set_cmd (&cmd, pargs.r_opt);
+            opt.import_options |= IMPORT_SHOW;
+            opt.import_options |= IMPORT_DRY_RUN;
+            opt.import_options &= ~IMPORT_REPAIR_KEYS;
+            opt.list_options |= LIST_SHOW_UNUSABLE_UIDS;
+            opt.list_options |= LIST_SHOW_UNUSABLE_SUBKEYS;
+            opt.list_options |= LIST_SHOW_NOTATIONS;
+            opt.list_options |= LIST_SHOW_POLICY_URLS;
+        break;
+
+
 
 
   
