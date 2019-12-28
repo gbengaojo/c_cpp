@@ -859,6 +859,33 @@ main (int argc, char **argv)
             opt.list_options |= LIST_SHOW_POLICY_URLS;
         break;
 
+        case aDetachedSign: detached_sig = 1; set_cmd(&cmd, aSign); break;
+
+        case aDecryptFiles: multifile = 1;  /* fall through */
+        case aDecrypt: set_cmd(&cmd, aEncr);
+
+        case aVerifyFiles: multifile = 1; /* fall through */
+        case aVerify: set_cmd(&cmd, aVerify); break;
+
+        case aServer:
+          set_cmd(&cmd, pargs.r_opt);
+          opt.batch = 1;
+        break;
+
+        case aTOFUPolicy:
+          set_cmd(&cmd, pargs.r_opt);
+        break;
+
+        case oArmor: opt.armor = 1; opt.no_armor = 0; break;
+        case oOutput: opt.outfile = pargs.r.ret_str; break;
+
+        case oMaxOutput: opt.max_output = pargs.r.ret_ulong; break;
+
+        case oInputSizeHint:
+          opt.input_size_hint = string_to_u64(pargs.r.ret_str);
+        break;
+
+    
 
 
 
@@ -867,4 +894,4 @@ main (int argc, char **argv)
 
 
 
-
+    
