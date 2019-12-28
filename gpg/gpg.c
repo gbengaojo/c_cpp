@@ -885,6 +885,52 @@ main (int argc, char **argv)
           opt.input_size_hint = string_to_u64(pargs.r.ret_str);
         break;
 
+        case oChunkSize:
+          opt.chunk_size = pargs.r.ret_int;
+        break;
+
+        case oQuiet: opt.quiet = 1; break;
+        case oNoTTY: tty_no_terminal(1); break;
+        case oDryRun: opt.dry_run = 1; break;
+        case oInteractive: opt.interactive = 1; break;
+        case oVerbose:
+          opt.verbose++;
+          gcry_control(GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+          opt.list_options |= LIST_SHOW_UNUSABLE_UIDS;
+          opt.list_options |= LIST_SHOW_UNUSABLE_SUBKEYS;
+        break;
+
+        case oBatch:
+          opt.batch = 1;
+          nogreeting = 1;
+        break;
+
+        case oUseAgent: /* Dummy */
+        break;
+
+        case oNoUseAgent:
+          obsolelete_option(configname, configfileno, "no-use-agent");
+        break;
+        case oGpgAgentInfo:
+	        obsolete_option (configname, configlineno, "gpg-agent-info");
+        break;
+        case oReaderPort:
+          obsolete_scdaemon_option (configname, configlineno, "reader-port");
+        break;
+        case octapiDriver:
+          obsolete_scdaemon_option (configname, configlineno, "ctapi-driver");
+        break;
+        case opcscDriver:
+          obsolete_scdaemon_option (configname, configlineno, "pcsc-driver");
+        break;
+        case oDisableCCID:
+          obsolete_scdaemon_option (configname, configlineno, "disable-ccid");
+        break;
+        case oHonorHttpProxy:
+          obsolete_option (configname, configlineno, "honor-http-proxy");
+        break;
+
+
     
 
 
