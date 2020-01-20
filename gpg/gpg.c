@@ -930,7 +930,6 @@ main (int argc, char **argv)
           obsolete_option (configname, configlineno, "honor-http-proxy");
         break;
 
-
     
 
 
