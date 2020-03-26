@@ -930,8 +930,16 @@ main (int argc, char **argv)
           obsolete_option (configname, configlineno, "honor-http-proxy");
         break;
 
-
-    
+        case oAnswerYes:
+          opt.answer_yes = 1;
+        break;
+        case oAnswerNo:
+          opt.answer_no = 1;
+        break;
+        case oKeyring:
+          append_to_strlist(&nrings, pargs.r.ret_str);
+        break;
+         
 
 
 
