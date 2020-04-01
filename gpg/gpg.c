@@ -939,6 +939,16 @@ main (int argc, char **argv)
         case oKeyring:
           append_to_strlist(&nrings, pargs.r.ret_str);
         break;
+        case oPrimaryKeyring:
+          sl = append_to_strlist(&nrings, pargs.r.ret_str);
+          sl->flags = KEYDB_RESOURCE_FLAG_PRIMARY;
+        break
+        case oShowKeyring:
+          deprected_warning(configname, configlineno, "--show-keyring",
+                "--list-options", "show-keyring");
+          opt.list_options|=LIST_SHOW_KEYRING;
+        break;
+
          
 
 
