@@ -949,10 +949,24 @@ main (int argc, char **argv)
           opt.list_options|=LIST_SHOW_KEYRING;
         break;
 
-         
+        case oDebug:
+          if (parse_debug_flag(pargs.r.ret_str, &opt.debug, debug_flags))
+          {
+            pargs.r_opt = ARGPARSE_INVALID_ARG;
+            pargs.err = ARGPARSE_PRINT_ERROR;
+          }
+        break;
 
-
-  
+        case oDebugAll: opt.debug = ~0; break;
+        case oDebugLevel: debug_level = pargs.r.ret_str; break;
+        case oDebugIOLBF: break; /* Already set in pre-parse step. */
+        case oDebugSetIobufSize:
+          opt_set_iobuf_size = pargs.r.ret_ulong;
+          opt_set_iobuf_size_used = 1;
+        break;
+        case oDebugAllowLargeChunks:
+          allow_large_chunks = 1;
+        break;  
 
 
 
